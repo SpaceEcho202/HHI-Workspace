@@ -285,7 +285,7 @@ def track_time (snr_res__var, scpy):
     start_time = clock()
 
     # Class call & method call to plot desired table "CqiB, McsA & McsB"
-    PlotTable({'PlotType': "Efficiency", 'PlotTable': "McsA", 'SnrMax': 30, 'SnrMin': -10
+    PlotTable({'PlotType': "Bler", 'PlotTable': "CqiB", 'SnrMax': 30, 'SnrMin': -10
                 ,'SnrResolution': snr_res__var}).PlotCurve()
 
 
