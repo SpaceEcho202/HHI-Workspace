@@ -21,7 +21,7 @@ class PlotTable:
             self.title         = dictionary.get('title'           , str.upper(self.plotType) + " for " + str.upper(self.plotTable))
             self.SnrMax        = dictionary.get('SnrMax'          , 10)
             self.SnrMin        = dictionary.get('SnrMin'          ,-10)
-            self.SnrResolution = dictionary.get('SnrResolution'   , 1100)
+            self.SnrResolution = dictionary.get('SnrResolution[dB]'   , 0.1)
             self.Save          = dictionary.get('Save'            , 'Yes')
             self.xlim          = dictionary.get('xlim'            , (self.SnrMin, self.SnrMax))
             if self.plotType == "Bler":
@@ -59,11 +59,14 @@ class PlotTable:
 
             #Sets labels "CqiB, McsA & McsB"
             if self.plotTable == "CqiB":
-                self.label = (Tables().getModulationOrder("MoudulationOrderCqiB"),Tables().getTableCqiB())
+                self.label = ((Tables().getModulationOrder("MoudulationOrderCqiB"),Tables().getTableCqiB()),
+                (Tables().getCodeRate("CoderRateCqiB")))
             elif self.plotTable == "McsA":
-                self.label = (Tables().getModulationOrder("MoudulationOrderMcsA"),Tables().getTableMcsA())
+                self.label = ((Tables().getModulationOrder("MoudulationOrderMcsA"),Tables().getTableMcsA()),
+                (Tables().getCodeRate("CoderRateMcsA")))
             elif self.plotTable == "McsB":
-                self.label = (Tables().getModulationOrder("MoudulationOrderMcsB"),Tables().getTableMcsB())
+                self.label = ((Tables().getModulationOrder("MoudulationOrderMcsB"),Tables().getTableMcsB()),
+                (Tables().getCodeRate("CoderRateMcsB")))
             else:
                 self.legend = "Unknown"
 
@@ -74,12 +77,13 @@ class PlotTable:
                 for n in range(len(TempPlot[0])):
                     plt.plot(TempPlot[0][n],
                         TempPlot[1][n],
-                        label = str(self.label[0][n][1]) + " " +str(self.label[0][n][2]),
+                        label = str(self.label[0][0][n][1]) + " " +str(self.label[0][0][n][2])+ " Coderate" + str(round(self.label[1][n],2)),
                         linestyle = self.lineSytle,
                         linewidth = self.linewidth ) 
 
                 plt.legend(bbox_to_anchor=(1,1), loc="upper left")
-
+                #plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left',
+                #ncol=2, mode="expand", borderaxespad=0.)
                 if self.Save == "Yes":
                     #Sets figure size can be changed to fit for different screens
                     fig = plt.gcf()
@@ -99,16 +103,16 @@ class PlotTable:
             # Creates efficiency curve    
             elif self.plotType == "Efficiency":
                 TempPlot = (self.CreateCurveDataEfficiency(self.plotTable, self.SnrMin, self.SnrMax, self.SnrResolution))
-
                 for n in range(len(TempPlot[0])):
                     plt.plot(TempPlot[0][n],
                         TempPlot[1][n],
-                        label = str(self.label[0][n][1]) + " " + str(self.label[0][n][2]) ,
+                        label = str(self.label[0][0][n][1]) + " <" +str(self.label[0][0][n][2])+ "> Coderate: " + str(round(self.label[1][n],2)),
                         linestyle = self.lineSytle,
                         linewidth = self.linewidth)
 
                 plt.legend(bbox_to_anchor=(1,1), loc="upper left")
-
+                #plt.legend(bbox_to_anchor=(0., -0.25, 1., 1.02), loc='lower left',
+                #ncol=4, mode="expand", borderaxespad=0.)
                 if self.Save == "Yes":
                     #Sets figure size can be changed to fit for different screens
                     fig = plt.gcf()
@@ -125,8 +129,9 @@ class PlotTable:
                     plt.show()
 
         def CreateCurveDataBler(self, TableType, SnrMin, SnrMax, Resolution):
-
-            self.SnrVector = np.linspace(SnrMin, SnrMax, Resolution)
+            
+            TempResolution = int((abs(SnrMin)+SnrMax)/Resolution)
+            self.SnrVector = np.linspace(SnrMin, SnrMax, TempResolution)
 
             if TableType == "CqiB":     
                TempSnrFactor   = (Tables().getTableCqiB())[:, 0]
@@ -155,7 +160,8 @@ class PlotTable:
 
         def CreateCurveDataEfficiency(self, TableType, SnrMin, SnrMax, Resolution):
 
-            self.SnrVector = np.linspace(SnrMin, SnrMax, Resolution)
+            TempResolution = int((abs(SnrMin)+SnrMax)/Resolution)
+            self.SnrVector = np.linspace(SnrMin, SnrMax, TempResolution)
 
             if TableType == "CqiB":     
                 TempSnrFactor   = (Tables().getTableCqiB())[:, 0]
@@ -197,5 +203,5 @@ class FastCalculationBlerEfficiency:
             return [((1.0 - Bler[i]) * self.MaximumRate[i]) for i in range(len(self.MaximumRate))]
 
 start_time = clock()
-PlotTable({'PlotType': "Efficiency", 'PlotTable': "McsA", 'SnrMax': 20, 'SnrMin': -10
-                ,'SnrResolution': 10000}).PlotCurve()
+PlotTable({'PlotType': "Efficiency", 'PlotTable': "McsB", 'SnrMax': 20, 'SnrMin': -10
+          ,'SnrResolution[dB]': 0.01}).PlotCurve()
