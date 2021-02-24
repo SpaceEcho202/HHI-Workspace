@@ -45,18 +45,29 @@ class PlotTableForAWGN:
             raise ValueError("SNR needs to be larger then zero")
         if np.isscalar(self.SNR):
             self.SNR = np.linspace(-10,self.SNR,int(abs(-10)+self.SNR/0.1))
+            self.IsScalar = True
     
     def BlerCqiB(self):
-        if self.TableData > len(Tables().getTableCqiB()):
+        if np.max(self.TableData) > len(Tables().getTableCqiB()):
             raise NotImplementedError("No data for dedicated curve")    
-        
-        TempSnrFactor   = (Tables().getTableCqiB())[0:self.TableData, 0]
-        TempCodeRate    = (Tables().getTableCqiB())[0:self.TableData, 1]
-        TempMaximumRate = (Tables().getTableCqiB())[0:self.TableData, 2]
-        DataY           = (FastCalculationBlerEfficiency
-                          (TempSnrFactor, TempCodeRate, TempMaximumRate)
-                          .GetBler(self.SNR))
-        self.CurveData  = [np.matlib.repmat(self.SNR, len(DataY), 1), DataY]
+        if self.IsScalar:
+            TempSnrFactor   = (Tables().getTableCqiB())[self.TableData, 0]
+            TempCodeRate    = (Tables().getTableCqiB())[self.TableData, 1]
+            TempMaximumRate = (Tables().getTableCqiB())[self.TableData, 2]
+            DataY           = (FastCalculationBlerEfficiency
+                            (TempSnrFactor, TempCodeRate, TempMaximumRate)
+                            .GetBler(self.SNR))
+            self.CurveData  = [self.SNR, DataY]
+        else:
+            FromTable       = np.min(self.TableData)
+            ToTable         = np.max(self.TableData)
+            TempSnrFactor   = (Tables().getTableCqiB())[FromTable:ToTable, 0]
+            TempCodeRate    = (Tables().getTableCqiB())[FromTable:ToTable, 1]
+            TempMaximumRate = (Tables().getTableCqiB())[FromTable:ToTable, 2]
+            DataY           = (FastCalculationBlerEfficiency
+                            (TempSnrFactor, TempCodeRate, TempMaximumRate)
+                            .GetBler(self.SNR))
+            self.CurveData  = [np.matlib.repmat(self.SNR, len(DataY), 1), DataY]
         self.__PlotCurve('CqiB')
         return [self.CurveData[0][:], self.CurveData[1][:]]
 
@@ -150,43 +161,58 @@ class PlotTableForAWGN:
                 (Tables().getCodeRate("CoderRateMcsB")))
             else:
                 self.legend = "Unknown"
-            if np.isscalar(self.TableData):
+            if self.IsScalar:
                 plt.plot(self.CurveData[0],self.CurveData[1],    
-                        label     = str(self.label[0][0][self.TableData][1]) + " " + 
+                        label     = str(self.label[0][0][self.TableData][1])+ " " + 
                                     str(self.label[0][0][self.TableData][2])+ " Coderate" + 
                                     str(round(self.label[1][self.TableData],2)),
                         linestyle = 'solid',
                         linewidth = 1)
-                plt.show()
             else:
                 for n in range(np.min(self.TableData),np.max(self.TableData)):
                     plt.plot(self.CurveData[0][n],self.CurveData[0][n],    
-                        label     = str(self.label[0][0][n][1]) + " " + 
+                        label     = str(self.label[0][0][n][1])+ " " + 
                                     str(self.label[0][0][n][2])+ " Coderate" + 
                                     str(round(self.label[1][n],2)),
-                        linestyle = self.lineSytle,
-                        linewidth = self.linewidth)
+                        linestyle = 'solid',
+                        linewidth = 1)
+            
+            plt.legend(bbox_to_anchor=(1,1), loc="upper left")
+            plt.show()
 
 class FastCalculationBlerEfficiency:
         def __init__(self, SnrFactor=1.0, CodeRateFactor=1.0, MaximumRate=1.0):
             self.SnrFactor      = SnrFactor
             self.CodeRateFactor = CodeRateFactor
             self.MaximumRate    = MaximumRate
-            if all (x < 0 for x in CodeRateFactor):
-                raise ValueError("Code rate factor has to be positive")
-            if all (x <= 0 for x in MaximumRate):
-                raise ValueError("Maximum rate has to be larger then zero")
- 
+            self.IsScalar       = True if np.isscalar(CodeRateFactor) else False
+
+            if self.IsScalar:
+                if CodeRateFactor < 0:
+                    raise ValueError("Code rate factor has to be positive")
+                if MaximumRate <= 0:
+                    raise ValueError("Maximum rate has to be larger then zero")
+            else:
+                if all (x < 0 for x in CodeRateFactor):
+                    raise ValueError("Code rate factor has to be positive")
+                if all (x <= 0 for x in MaximumRate):
+                    raise ValueError("Maximum rate has to be larger then zero")
+
         def GetBler(self, SnrInDecibel):
-            ScaleSnr = [((SnrInDecibel)-self.SnrFactor[i])\
-                / math.sqrt(2.0) / self.CodeRateFactor[i] for i in range(len(self.SnrFactor))]
+            if self.IsScalar:
+                ScaleSnr = ((SnrInDecibel)-self.SnrFactor)\
+                    / math.sqrt(2.0) / self.CodeRateFactor
+            else:
+                ScaleSnr = [((SnrInDecibel)-self.SnrFactor[i])\
+                    / math.sqrt(2.0) / self.CodeRateFactor[i] for i in range(len(self.SnrFactor))]
 
             return [(0.5*(1-(scipy.special.erf(v)))) for v in ScaleSnr]
 
         def GetEfficiency(self, SnrInDecibel):
             Bler = np.array(self.GetBler(SnrInDecibel))
+            if self.IsScalar:
+                return ((1.0 - Bler) * self.MaximumRate)
+            else:
+                return [((1.0 - Bler[i]) * self.MaximumRate[i]) for i in range(len(self.MaximumRate))]
 
-            return [((1.0 - Bler[i]) * self.MaximumRate[i]) for i in range(len(self.MaximumRate))]
-
-Test = PlotTableForAWGN(3,20,1).BlerCqiB();
-Test1 = 1
+Test = PlotTableForAWGN(np.linspace(0, 10, 10),30,1).BlerCqiB();
