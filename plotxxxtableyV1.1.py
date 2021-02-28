@@ -1,11 +1,9 @@
-from time import process_time as clock
 import matplotlib.pyplot as plt
 from nr_tables import Tables
 import numpy as np
 import scipy.special
 import numpy.matlib
 import math
-import time
 
 # Implementation is not fully done. Do not return the hole Matrix of calculation 
 
@@ -44,6 +42,11 @@ class PlotTableForAWGN:
             dictionary or empty //if empty uses default StyleParameters
 
         """
+        # Local variables for appending data
+        TempSnrFactor     = []
+        TempCodeRate      = []
+        TempMaximumRate   = []
+        
         self.TableData         = TableData
         self.StyleParameter    = StyleParameter
         self.SNR               = SNR
@@ -51,12 +54,12 @@ class PlotTableForAWGN:
         self.IsScalarSNR       = True if np.isscalar(self.SNR) else False
         self.IsScalarTableData = True if np.isscalar(self.TableData) else False
 
-        ResolutionSNRIndB         = self.StyleParameter.get('ResolutionSNRIndB',0.1)
+        SNR_Resolution         = self.StyleParameter.get('SNR_Resolution',0.1)
         
         if self.IsScalarSNR and self.SNR < 0: 
             raise ValueError("SNR needs to be larger then zero")
         elif self.IsScalarSNR:
-             self.SNR = np.linspace(-10,self.SNR,int(abs(-10)+self.SNR/ResolutionSNRIndB))
+             self.SNR = np.linspace(-10,self.SNR,int(abs(-10)+self.SNR/SNR_Resolution))
         # Removes dublicates in TableData Vector
         if not self.IsScalarTableData:
             self.TableData = np.unique(self.TableData)
@@ -72,20 +75,21 @@ class PlotTableForAWGN:
         '''
         if self.ToTable > len(Tables().getTableCqiB()):
             raise NotImplementedError("No data for dedicated curve")    
-
+        
         if self.IsScalarTableData:
             TempSnrFactor   = (Tables().getTableCqiB())[self.TableData, 0]
             TempCodeRate    = (Tables().getTableCqiB())[self.TableData, 1]
             TempMaximumRate = (Tables().getTableCqiB())[self.TableData, 2]
             DataY           = (FastCalculationBlerEfficiency
-                              (TempSnrFactor, TempCodeRate, TempMaximumRate)
+                              (self.TempSnrFactor, self.TempCodeRate, self.TempMaximumRate)
                               .GetBler(self.SNR))
             self.CurveData  = [self.SNR, DataY]
         else:
+            TempSnrFactor, TempCodeRate, TempMaximumRate = [],[],[]
             for n in self.TableData:
-                TempSnrFactor   = (Tables().getTableCqiB())[0:self.ToTable, 0]
-                TempCodeRate    = (Tables().getTableCqiB())[0:self.ToTable, 1]
-                TempMaximumRate = (Tables().getTableCqiB())[0:self.ToTable, 2]
+                TempSnrFactor   = np.append(TempSnrFactor,   (Tables().getTableCqiB())[n, 0])
+                TempCodeRate    = np.append(TempCodeRate ,   (Tables().getTableCqiB())[n, 1])
+                TempMaximumRate = np.append(TempMaximumRate, (Tables().getTableCqiB())[n, 2])
 
             DataY           = (FastCalculationBlerEfficiency
                               (TempSnrFactor, TempCodeRate, TempMaximumRate)
@@ -112,9 +116,12 @@ class PlotTableForAWGN:
                               .GetBler(self.SNR))
             self.CurveData  = [self.SNR, DataY]
         else:
-            TempSnrFactor   = (Tables().getTableMcsA())[0:self.ToTable, 0]
-            TempCodeRate    = (Tables().getTableMcsA())[0:self.ToTable, 1]
-            TempMaximumRate = (Tables().getTableMcsA())[0:self.ToTable, 2]
+            TempSnrFactor, TempCodeRate, TempMaximumRate = [],[],[]
+            for n in self.TableData:
+                TempSnrFactor   = np.append(TempSnrFactor,   (Tables().getTableMcsA())[n, 0])
+                TempCodeRate    = np.append(TempCodeRate ,   (Tables().getTableMcsA())[n, 1])
+                TempMaximumRate = np.append(TempMaximumRate, (Tables().getTableMcsA())[n, 2])
+
             DataY           = (FastCalculationBlerEfficiency
                               (TempSnrFactor, TempCodeRate, TempMaximumRate)
                               .GetBler(self.SNR))
@@ -140,9 +147,12 @@ class PlotTableForAWGN:
                               .GetBler(self.SNR))
             self.CurveData  = [self.SNR, DataY]
         else:
-            TempSnrFactor   = (Tables().getTableMcsB())[0:self.ToTable, 0]
-            TempCodeRate    = (Tables().getTableMcsB())[0:self.ToTable, 1]
-            TempMaximumRate = (Tables().getTableMcsB())[0:self.ToTable, 2]
+            TempSnrFactor, TempCodeRate, TempMaximumRate = [],[],[]
+            for n in self.TableData:
+                TempSnrFactor   = np.append(TempSnrFactor,   (Tables().getTableMcsB())[n, 0])
+                TempCodeRate    = np.append(TempCodeRate ,   (Tables().getTableMcsB())[n, 1])
+                TempMaximumRate = np.append(TempMaximumRate, (Tables().getTableMcsB())[n, 2])
+
             DataY           = (FastCalculationBlerEfficiency
                               (TempSnrFactor, TempCodeRate, TempMaximumRate)
                               .GetBler(self.SNR))
@@ -168,12 +178,15 @@ class PlotTableForAWGN:
                               .GetEfficiency(self.SNR))
             self.CurveData  = [self.SNR, DataY]
         else:
-            TempSnrFactor   = (Tables().getTableCqiB())[self.TableData, 0]
-            TempCodeRate    = (Tables().getTableCqiB())[self.TableData, 1]
-            TempMaximumRate = (Tables().getTableCqiB())[self.TableData, 2]
+            TempSnrFactor, TempCodeRate, TempMaximumRate = [],[],[]
+            for n in self.TableData:
+                TempSnrFactor   = np.append(TempSnrFactor,   (Tables().getTableCqiB())[n, 0])
+                TempCodeRate    = np.append(TempCodeRate ,   (Tables().getTableCqiB())[n, 1])
+                TempMaximumRate = np.append(TempMaximumRate, (Tables().getTableCqiB())[n, 2])
+
             DataY           = (FastCalculationBlerEfficiency
-                                (TempSnrFactor, TempCodeRate, TempMaximumRate)
-                                .GetEfficiency(self.SNR))
+                              (TempSnrFactor, TempCodeRate, TempMaximumRate)
+                              .GetEfficiency(self.SNR))
             self.CurveData  = [np.matlib.repmat(self.SNR, len(DataY), 1), DataY]
 
         self.__setAxisLabelTitleScale('Efficiency', 'CqiB')
@@ -196,9 +209,12 @@ class PlotTableForAWGN:
                               .GetEfficiency(self.SNR))
             self.CurveData  = [self.SNR, DataY]
         else:
-            TempSnrFactor   = (Tables().getTableMcsA())[0:self.ToTable, 0]
-            TempCodeRate    = (Tables().getTableMcsA())[0:self.ToTable, 1]
-            TempMaximumRate = (Tables().getTableMcsA())[0:self.ToTable, 2]
+            TempSnrFactor, TempCodeRate, TempMaximumRate = [],[],[]
+            for n in self.TableData:
+                TempSnrFactor   = np.append(TempSnrFactor,   (Tables().getTableMcsA())[n, 0])
+                TempCodeRate    = np.append(TempCodeRate ,   (Tables().getTableMcsA())[n, 1])
+                TempMaximumRate = np.append(TempMaximumRate, (Tables().getTableMcsA())[n, 2])
+
             DataY           = (FastCalculationBlerEfficiency
                               (TempSnrFactor, TempCodeRate, TempMaximumRate)
                               .GetEfficiency(self.SNR))
@@ -224,9 +240,12 @@ class PlotTableForAWGN:
                               .GetEfficiency(self.SNR))
             self.CurveData  = [self.SNR, DataY]
         else:
-            TempSnrFactor   = (Tables().getTableMcsB())[0:self.ToTable, 0]
-            TempCodeRate    = (Tables().getTableMcsB())[0:self.ToTable, 1]
-            TempMaximumRate = (Tables().getTableMcsB())[0:self.ToTable, 2]
+            TempSnrFactor, TempCodeRate, TempMaximumRate = [],[],[]
+            for n in self.TableData:
+                TempSnrFactor   = np.append(TempSnrFactor,   (Tables().getTableMcsB())[n, 0])
+                TempCodeRate    = np.append(TempCodeRate ,   (Tables().getTableMcsB())[n, 1])
+                TempMaximumRate = np.append(TempMaximumRate, (Tables().getTableMcsB())[n, 2])
+
             DataY           = (FastCalculationBlerEfficiency
                               (TempSnrFactor, TempCodeRate, TempMaximumRate)
                               .GetEfficiency(self.SNR))
@@ -247,6 +266,7 @@ class PlotTableForAWGN:
         else: 
             self.Yscale = 'linear'
             self.ylabel = 'Spectral Efficiency in [bit/s/Hz]'
+            self.ylim   = (0,     np.max(self.CurveData[1]))
         self.title     = Type + " for " + Table
         self.SaveTitle = 'Plot' + Type + 'table' + Table
              
@@ -255,13 +275,13 @@ class PlotTableForAWGN:
         This method creates a plot for the dedicated table & type -> can not be seen 
         '''
 
-        # Style parameter for dedicated plot
+        # Dictionary compare and set style parameter
         gridMajor     = self.StyleParameter.get('grid',       "True"  )
         gridMinor     = self.StyleParameter.get('gridMinor',  "True"  )
         linestyle     = self.StyleParameter.get('linestyle',   'solid')
         linewidth     = self.StyleParameter.get('linewidth',         1)
         plotSave      = self.StyleParameter.get('Save',          'Yes')
-        # Sets plt.plot() method
+        # Sets style parameter plt.plot method
         plt.title(self.StyleParameter.get('title',     self.title))
         plt.xlabel(self.StyleParameter.get('xlabel','SNR in [dB]'))
         plt.ylabel(self.StyleParameter.get('ylabel',  self.ylabel))
@@ -298,7 +318,7 @@ class PlotTableForAWGN:
         else:
             for n in range(len(self.TableData)):
                 TempData = self.TableData[n]
-                plt.plot(self.CurveData[0][TempData],self.CurveData[1][TempData],    
+                plt.plot(self.CurveData[0][n],self.CurveData[1][n],    
                     label     = str(self.label[0][0][TempData][1])+ " " + 
                                 str(self.label[0][0][TempData][2])+ " Coderate " + 
                                 str(round(self.label[1][TempData],2)),
@@ -307,8 +327,7 @@ class PlotTableForAWGN:
             plt.legend(bbox_to_anchor=(1,1), loc="upper left")
 
         if str.upper(plotSave) == "YES":
-            #Sets figure size can be changed to fit for different
-            #  screens
+            #Sets figure size can be changed to fit for different screens
             fig = plt.gcf()
             fig.set_size_inches(17, 8)
             plt.savefig(self.SaveTitle, bbox_inches='tight')
@@ -376,13 +395,4 @@ class FastCalculationBlerEfficiency:
         else:
             return [((1.0 - Bler[i]) * self.MaximumRate[i]) for i in range(len(self.MaximumRate))]
 
-#Test = PlotTableForAWGN([1,2,3], np.linspace(-10, 30, 100), {'Save': 'No'}).BlerCqiB()
-
-TestA = (Tables().getTableCqiB())[0:3, 0]
-Vec   = [0, 1, 2, 3]
-TestC = (Tables().getTableCqiB())[Vec[0], 0]
-for i in Vec:
-    TestB = np.append(TestC,(Tables().getTableCqiB())[i, 0])
-TestB = 1
-
-
+PlotTableForAWGN([14,2,3], np.linspace(-10, 30, 100), {'Save': 'No'}).EfficiencyCqiB()
