@@ -82,9 +82,11 @@ class PlotTableForAWGN:
                               .GetBler(self.SNR))
             self.CurveData  = [self.SNR, DataY]
         else:
-            TempSnrFactor   = (Tables().getTableCqiB())[0:self.ToTable, 0]
-            TempCodeRate    = (Tables().getTableCqiB())[0:self.ToTable, 1]
-            TempMaximumRate = (Tables().getTableCqiB())[0:self.ToTable, 2]
+            for n in self.TableData:
+                TempSnrFactor   = (Tables().getTableCqiB())[0:self.ToTable, 0]
+                TempCodeRate    = (Tables().getTableCqiB())[0:self.ToTable, 1]
+                TempMaximumRate = (Tables().getTableCqiB())[0:self.ToTable, 2]
+
             DataY           = (FastCalculationBlerEfficiency
                               (TempSnrFactor, TempCodeRate, TempMaximumRate)
                               .GetBler(self.SNR))
@@ -304,14 +306,15 @@ class PlotTableForAWGN:
                     linewidth = linewidth)
             plt.legend(bbox_to_anchor=(1,1), loc="upper left")
 
-            if str.upper(plotSave) == "YES":
-                #Sets figure size can be changed to fit for different screens
-                fig = plt.gcf()
-                fig.set_size_inches(17, 8)
-                plt.savefig(self.SaveTitle, bbox_inches='tight')
-                plt.show()
-            else:
-                plt.show()
+        if str.upper(plotSave) == "YES":
+            #Sets figure size can be changed to fit for different
+            #  screens
+            fig = plt.gcf()
+            fig.set_size_inches(17, 8)
+            plt.savefig(self.SaveTitle, bbox_inches='tight')
+            plt.show()
+        else:
+            plt.show()
 class FastCalculationBlerEfficiency:
     """
     A class for fast BLER & Efficiency calculation 
@@ -373,6 +376,13 @@ class FastCalculationBlerEfficiency:
         else:
             return [((1.0 - Bler[i]) * self.MaximumRate[i]) for i in range(len(self.MaximumRate))]
 
-Test = PlotTableForAWGN([0, 8, 14], np.linspace(-10, 30, 100), {'Save': 'No'}).BlerCqiB()
+#Test = PlotTableForAWGN([1,2,3], np.linspace(-10, 30, 100), {'Save': 'No'}).BlerCqiB()
+
+TestA = (Tables().getTableCqiB())[0:3, 0]
+Vec   = [0, 1, 2, 3]
+TestC = (Tables().getTableCqiB())[Vec[0], 0]
+for i in Vec:
+    TestB = np.append(TestC,(Tables().getTableCqiB())[i, 0])
+TestB = 1
 
 
