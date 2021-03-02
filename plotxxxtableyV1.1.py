@@ -7,7 +7,7 @@ import math
 
 # Implementation is not fully done. Do not return the hole Matrix of calculation 
 
-class PlotTableForAWGN:
+class PlotTable:
     """
     A class for plotting awgn curves for passed tables
 
@@ -33,36 +33,39 @@ class PlotTableForAWGN:
         ----------
         TableData : int
 
-            Vector or Scalar //if Scalar plots only dedicated curve
+            Vector or Scalar //if Scalar plots only dedicated curve TableData CqiB: 0-14 McsA: 0-28, McsB: 0-27
         SNR : float
 
             Vector or Scalar //if Scalar -10 dB to passed argument in 0.1 dB steps
         StyleParameter : dict
 
-            dictionary or empty //if empty uses default StyleParameters
-
-        """
-        # Local variables for appending data
-        TempSnrFactor     = []
-        TempCodeRate      = []
-        TempMaximumRate   = []
+            dictionary or empty //if empty {} uses default StyleParameters 
         
-        self.TableData         = TableData
-        self.StyleParameter    = StyleParameter
+        Returns
+        -------
+        CurveData[0] : float
+
+            Vector with all calculated BLER or Efficiency data
+        CurveData[1] : float
+
+            Vector with all dedicated SNR values
+        """
         self.SNR               = SNR
+        self.StyleParameter    = StyleParameter
+        self.TableData         = np.array(TableData).astype(int)
         self.ToTable           = int(np.max(self.TableData)+1)
         self.IsScalarSNR       = True if np.isscalar(self.SNR) else False
         self.IsScalarTableData = True if np.isscalar(self.TableData) else False
-
+    
         SNR_Resolution         = self.StyleParameter.get('SNR_Resolution',0.1)
-        
+        # Check if passed scalar value is larger then zero
         if self.IsScalarSNR and self.SNR < 0: 
             raise ValueError("SNR needs to be larger then zero")
         elif self.IsScalarSNR:
              self.SNR = np.linspace(-10,self.SNR,int(abs(-10)+self.SNR/SNR_Resolution))
         # Removes dublicates in TableData Vector
         if not self.IsScalarTableData:
-            self.TableData = np.unique(self.TableData)
+            self.TableData = np.unique(self.TableData)           
             # Converts a Vector with single entry to Scalar
             if len(self.TableData) == 1:
                 print("change from Vector to Scalar")
@@ -81,7 +84,7 @@ class PlotTableForAWGN:
             TempCodeRate    = (Tables().getTableCqiB())[self.TableData, 1]
             TempMaximumRate = (Tables().getTableCqiB())[self.TableData, 2]
             DataY           = (FastCalculationBlerEfficiency
-                              (self.TempSnrFactor, self.TempCodeRate, self.TempMaximumRate)
+                              (TempSnrFactor, TempCodeRate, TempMaximumRate)
                               .GetBler(self.SNR))
             self.CurveData  = [self.SNR, DataY]
         else:
@@ -269,12 +272,13 @@ class PlotTableForAWGN:
             self.ylim   = (0,     np.max(self.CurveData[1]))
         self.title     = Type + " for " + Table
         self.SaveTitle = 'Plot' + Type + 'table' + Table
-             
+        self.xlimMin   = np.min(self.SNR)
+        self.xlimMax   = np.max(self.SNR)
+              
     def __PlotCurve(self, Table):       
         '''
         This method creates a plot for the dedicated table & type -> can not be seen 
         '''
-
         # Dictionary compare and set style parameter
         gridMajor     = self.StyleParameter.get('grid',       "True"  )
         gridMinor     = self.StyleParameter.get('gridMinor',  "True"  )
@@ -282,11 +286,12 @@ class PlotTableForAWGN:
         linewidth     = self.StyleParameter.get('linewidth',         1)
         plotSave      = self.StyleParameter.get('Save',          'Yes')
         # Sets style parameter plt.plot method
-        plt.title(self.StyleParameter.get('title',     self.title))
-        plt.xlabel(self.StyleParameter.get('xlabel','SNR in [dB]'))
-        plt.ylabel(self.StyleParameter.get('ylabel',  self.ylabel))
-        plt.yscale(self.StyleParameter.get('yscale',  self.Yscale))
-        plt.ylim(self.StyleParameter.get('ylim',        self.ylim))
+        plt.title(self.StyleParameter.get('title',                 self.title))
+        plt.xlabel(self.StyleParameter.get('xlabel',            'SNR in [dB]'))
+        plt.ylabel(self.StyleParameter.get('ylabel',              self.ylabel))
+        plt.yscale(self.StyleParameter.get('yscale',              self.Yscale))
+        plt.ylim(self.StyleParameter.get('ylim',                    self.ylim))
+        plt.xlim(self.StyleParameter.get('xlim', (self.xlimMin, self.xlimMax)))
             
         #sets grid Major if not predefined  
         if gridMajor == 'True':
@@ -296,6 +301,7 @@ class PlotTableForAWGN:
                 plt.minorticks_on()
                 plt.grid(b=True, which='minor', color='#999999',
                          linestyle='-', alpha=0.2)
+
         #Sets labels "CqiB, McsA & McsB"
         if Table == "CqiB":
             self.label = ((Tables().getModulationOrder("MoudulationOrderCqiB"), Tables().getTableCqiB()),
@@ -324,7 +330,7 @@ class PlotTableForAWGN:
                                 str(round(self.label[1][TempData],2)),
                     linestyle = linestyle,
                     linewidth = linewidth)
-            plt.legend(bbox_to_anchor=(1,1), loc="upper left")
+        plt.legend(bbox_to_anchor=(1,1), loc="upper left")
 
         if str.upper(plotSave) == "YES":
             #Sets figure size can be changed to fit for different screens
@@ -395,4 +401,4 @@ class FastCalculationBlerEfficiency:
         else:
             return [((1.0 - Bler[i]) * self.MaximumRate[i]) for i in range(len(self.MaximumRate))]
 
-PlotTableForAWGN([14,2,3], np.linspace(-10, 30, 100), {'Save': 'No'}).EfficiencyCqiB()
+PlotTable([0, 1, 15, 25], 20, {'Save': 'No'}).BlerMcsA()

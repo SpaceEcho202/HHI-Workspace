@@ -203,5 +203,5 @@ class FastCalculationBlerEfficiency:
             return [((1.0 - Bler[i]) * self.MaximumRate[i]) for i in range(len(self.MaximumRate))]
 
 start_time = clock()
-PlotTable({'PlotType': "Efficiency", 'PlotTable': "McsB", 'SnrMax': 20, 'SnrMin': -10
+PlotTable({'PlotType': "Bler", 'PlotTable': "McsB", 'SnrMax': 20, 'SnrMin': -10
           ,'SnrResolution[dB]': 0.01}).PlotCurve()
