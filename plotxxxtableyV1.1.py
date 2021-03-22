@@ -4,9 +4,6 @@ import numpy as np
 import scipy.special
 import numpy.matlib
 import math
-
-# Implementation is not fully done. Do not return the hole Matrix of calculation 
-
 class PlotTable:
     """
     A class for plotting awgn curves for passed tables
@@ -33,36 +30,57 @@ class PlotTable:
         ----------
         TableData : int
 
-            Vector or Scalar //if Scalar plots only dedicated curve TableData CqiB: 0-14 McsA: 0-28, McsB: 0-27
+            Vector or Scalar //if Scalar is passed plots only dedicated curve. The following tables are currently implemented:
+            CqiB: 1-14 McsA: 0-28, McsB: 0-27
         SNR : float
 
-            Vector or Scalar //if Scalar -10 dB to passed argument in 0.1 dB steps
+            Vector or Scalar //if Scalar is used then from -10 dB to passed argument in 0.1 dB steps or dedicated step size
         StyleParameter : dict
 
-            dictionary or empty //if empty {} uses default StyleParameters 
-        
+            dictionary //if dictonary is empty pass {} to argument then class is initialised with the following default parameters:
+            {yscale:'log' for BLER and 'linear' for Efficiency, title:'Table' and 'Type', xlabel:'SNR', ylabel:'Type', 
+            linewidth: 1, linestyle: 'solid', girdMajor: 'TRUE',gridMinor: 'TRUE',Save: 'NO', ResoSNR: 0.1}
+            //else define your own parameters.
+            
         Returns
         -------
         CurveData[0] : float
 
-            Vector with all calculated BLER or Efficiency data
+            Vector or Matrix with calculated BLER or Efficiency data
         CurveData[1] : float
 
-            Vector with all dedicated SNR values
+            Vector or Matrix with all dedicated SNR values
+
+        Examples
+        -------
+        1.) Call the class PlotTable.
+
+        2.) Select the desired data, e.g. as Scalar 0, 1, ...N or as Vector [0,2]
+
+        3.) Pass a scalar e.g. 20 or as a vector np.linspace(-10, 20, 100)
+
+        4.) Pass an empty dictionary e.g. {} or set own parameters {'xlabel': Test, 'Save': Yes, ...}
+
+        5.) Call method for graphical representation of the desired curve e.g. BlerMcsA(), EfficiencyMcsA() 
+
+        DataBlerMcsA = PlotTable([0, 1], 20, {}).BlerMcsA() or
+
+        DataBlerCqiB = PlotTable(0, np.linspace(-10, 20, 1e3), {'Save':Yes}).BlerCqiB()
         """
         self.SNR               = SNR
         self.StyleParameter    = StyleParameter
         self.TableData         = np.array(TableData).astype(int)
-        self.ToTable           = int(np.max(self.TableData)+1)
+        self.FromTable         = int(np.min(self.TableData))
+        self.ToTable           = int(np.max(self.TableData) +1 )
         self.IsScalarSNR       = True if np.isscalar(self.SNR) else False
         self.IsScalarTableData = True if np.isscalar(self.TableData) else False
     
-        SNR_Resolution         = self.StyleParameter.get('SNR_Resolution',0.1)
+        ResoSNR         = self.StyleParameter.get('ResoSNR',0.1)
         # Check if passed scalar value is larger then zero
         if self.IsScalarSNR and self.SNR < 0: 
             raise ValueError("SNR needs to be larger then zero")
         elif self.IsScalarSNR:
-             self.SNR = np.linspace(-10,self.SNR,int(abs(-10)+self.SNR/SNR_Resolution))
+             self.SNR = np.linspace(-10,self.SNR,int(abs(-10)+self.SNR/ResoSNR))
         # Removes dublicates in TableData Vector
         if not self.IsScalarTableData:
             self.TableData = np.unique(self.TableData)           
@@ -76,9 +94,9 @@ class PlotTable:
         '''
         This method creates SNR- Vector & BLER- Vector for the dedicated-> CqiB- Table 
         '''
-        if self.ToTable > len(Tables().getTableCqiB()):
+        self.TableData = self.TableData - 1
+        if self.ToTable -1 > len(Tables().getTableCqiB()) or self.FromTable <= 0:
             raise NotImplementedError("No data for dedicated curve")    
-        
         if self.IsScalarTableData:
             TempSnrFactor   = (Tables().getTableCqiB())[self.TableData, 0]
             TempCodeRate    = (Tables().getTableCqiB())[self.TableData, 1]
@@ -107,7 +125,7 @@ class PlotTable:
         '''
         This method creates SNR- Vector & BLER- Vector for the dedicated-> McsA- Table
         '''
-        if self.ToTable > len(Tables().getTableMcsA()):
+        if self.ToTable > len(Tables().getTableMcsA()) or self.FromTable < 0:
             raise NotImplementedError("No data for dedicated curve")    
 
         if self.IsScalarTableData:
@@ -138,7 +156,7 @@ class PlotTable:
         '''
         This method creates SNR- Vector & BLER- Vector for the dedicated-> McsB- Table
         '''
-        if self.ToTable > len(Tables().getTableMcsB()):
+        if self.ToTable > len(Tables().getTableMcsB()) or self.FromTable < 0:
             raise NotImplementedError("No data for dedicated curve")    
 
         if self.IsScalarTableData:
@@ -169,9 +187,9 @@ class PlotTable:
         '''
         This method creates SNR- Vector & Efficiency- Vector for the dedicated-> CqiB- Table
         '''
-        if self.ToTable > len(Tables().getTableCqiB()):
-            raise NotImplementedError("No data for dedicated curve")    
-
+        self.TableData = self.TableData - 1
+        if self.ToTable -1 > len(Tables().getTableCqiB()) or self.FromTable <= 0:
+            raise NotImplementedError("No data for dedicated curve")      
         if self.IsScalarTableData:
             TempSnrFactor   = (Tables().getTableCqiB())[self.TableData, 0]
             TempCodeRate    = (Tables().getTableCqiB())[self.TableData, 1]
@@ -200,7 +218,7 @@ class PlotTable:
         '''
         This method creates SNR- Vector & Efficiency- Vector for the dedicated-> McsA- Table 
         '''
-        if self.ToTable > len(Tables().getTableMcsA()):
+        if self.ToTable > len(Tables().getTableMcsA()) or self.FromTable < 0:
             raise NotImplementedError("No data for dedicated curve")    
 
         if self.IsScalarTableData:
@@ -231,7 +249,7 @@ class PlotTable:
         '''
         This method creates SNR- Vector & Efficiency- Vector for the dedicated-> McsB- Table 
         '''
-        if self.ToTable > len(Tables().getTableMcsB()):
+        if self.ToTable > len(Tables().getTableMcsB()) or self.FromTable < 0:
             raise NotImplementedError("No data for dedicated curve")    
 
         if self.IsScalarTableData:
@@ -265,7 +283,7 @@ class PlotTable:
         if Type == 'BLER':
             self.Yscale    = 'log'
             self.ylabel    = 'BLER'
-            self.ylim      = 10e-6
+            self.ylim      = (10e-6, 1)
         else: 
             self.Yscale = 'linear'
             self.ylabel = 'Spectral Efficiency in [bit/s/Hz]'
@@ -280,8 +298,8 @@ class PlotTable:
         This method creates a plot for the dedicated table & type -> can not be seen 
         '''
         # Dictionary compare and set style parameter
-        gridMajor     = self.StyleParameter.get('grid',       "True"  )
-        gridMinor     = self.StyleParameter.get('gridMinor',  "True"  )
+        gridMajor     = self.StyleParameter.get('grid',         "True")
+        gridMinor     = self.StyleParameter.get('gridMinor',    "True")
         linestyle     = self.StyleParameter.get('linestyle',   'solid')
         linewidth     = self.StyleParameter.get('linewidth',         1)
         plotSave      = self.StyleParameter.get('Save',          'Yes')
@@ -330,7 +348,7 @@ class PlotTable:
                                 str(round(self.label[1][TempData],2)),
                     linestyle = linestyle,
                     linewidth = linewidth)
-        plt.legend(bbox_to_anchor=(1,1), loc="upper left")
+        plt.legend(bbox_to_anchor=(1,1), loc="upper left", fontsize='x-small', fancybox=True)
 
         if str.upper(plotSave) == "YES":
             #Sets figure size can be changed to fit for different screens
@@ -359,13 +377,13 @@ class FastCalculationBlerEfficiency:
         ----------
         SnrFactor : float or int
 
-            Vector or Scalar //if Scalar calculates only dedicated value
+            Vector or Scalar //if Scalar is passed calculates only dedicated value
         CodeRateFactor : float or int
 
-            Vector or Scalar //if Scalar calculates only dedicated value // has to be positive
+            Vector or Scalar //if Scalar is passed calculates only dedicated value // has to be positive
         MaximumRate : float or int
 
-            dictionary or empty //if Scalar calculates only dedicated value // has to be larger then zero
+            dictionary or empty //if Scalar is passed calculates only dedicated value // has to be larger then zero
 
         """
         self.SnrFactor      = SnrFactor
@@ -401,4 +419,4 @@ class FastCalculationBlerEfficiency:
         else:
             return [((1.0 - Bler[i]) * self.MaximumRate[i]) for i in range(len(self.MaximumRate))]
 
-PlotTable([0, 1, 15, 25], 20, {'Save': 'No'}).BlerMcsA()
+PlotTable(np.linspace(0, 28, 29), np.linspace(-10,20,1000), {'Save':'No'}).BlerMcsA()
