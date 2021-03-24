@@ -1,17 +1,17 @@
-from nr_tables import NR_Tables
-from nr_tables import getCurveParameterForCqiTable2
-from nr_tables import getCurveParameterForMcsTable1
-from nr_tables import getCurveParameterForMcsTable2
-
+from nr_tables import *
 import matplotlib.pyplot as plt
 from enum import Enum, auto
 import scipy.special
 import numpy.matlib
 import numpy as np
 import math
+class NR_Table(Enum):
+    CQI_TABLE_2 = auto()
+    MCS_TABLE_1 = auto()
+    MCS_TABLE_2 = auto()
 class StyleParameter():
     SnrStart = -10
-    SnrEnd = 20
+    SnrEnd = 20 
     SnrResolution = 0.1
     FigSave = False
     CscSave = False
@@ -22,33 +22,33 @@ def MyPlotFunction(PlottingData, StyleParameter):
     plt.show()
 
 def PlotBlerforCqiTable2(LevelIndex, SnrVectorOrScalar, StyleParameter):
-    [LevelVector, SnrVector, CurveParameter] = CheckArgumentsForSnrAndLevel(LevelIndex, SnrVectorOrScalar, NR_Tables.CQI_TABLE_2)
+    [LevelVector, SnrVector, CurveParameter] = CheckArgumentsForSnrAndLevel(LevelIndex, SnrVectorOrScalar, NR_Table.CQI_TABLE_2)
     MyPlotFunction(CalculateBler(LevelVector, SnrVector, CurveParameter, StyleParameter))
 
 def PlotBlerforMcsTable1(LevelIndex, SnrVectorOrScalar, StyleParameter):
-    [LevelVector, SnrVector, CurveParameter] = CheckArgumentsForSnrAndLevel(LevelIndex, SnrVectorOrScalar, NR_Tables.MCS_TABLE_1)
+    [LevelVector, SnrVector, CurveParameter] = CheckArgumentsForSnrAndLevel(LevelIndex, SnrVectorOrScalar, NR_Table.MCS_TABLE_1)
     MyPlotFunction(CalculateBler(LevelVector, SnrVector, CurveParameter, StyleParameter))
 
 def PlotBlerforMcsTable2(LevelIndex, SnrVectorOrScalar, StyleParameter):
-    [LevelVector, SnrVector, CurveParameter] = CheckArgumentsForSnrAndLevel(LevelIndex, SnrVectorOrScalar, NR_Tables.MCS_TABLE_2)
+    [LevelVector, SnrVector, CurveParameter] = CheckArgumentsForSnrAndLevel(LevelIndex, SnrVectorOrScalar, NR_Table.MCS_TABLE_2)
     MyPlotFunction(CalculateBler(LevelVector, SnrVector, CurveParameter, StyleParameter))
 
 def PlotEfficiencyforCqiTable2(LevelIndex, SnrVectorOrScalar, StyleParameter):
-    [LevelVector, SnrVector, CurveParameter] = CheckArgumentsForSnrAndLevel(LevelIndex, SnrVectorOrScalar, NR_Tables.CQI_TABLE_2)
+    [LevelVector, SnrVector, CurveParameter] = CheckArgumentsForSnrAndLevel(LevelIndex, SnrVectorOrScalar, NR_Table.CQI_TABLE_2)
     MyPlotFunction(CalculateEfficiency(LevelVector, SnrVector, CurveParameter, StyleParameter))
 
 def PlotEfficiencyforMcsTable1(LevelIndex, SnrVectorOrScalar, StyleParameter):
-    [LevelVector, SnrVector, CurveParameter] = CheckArgumentsForSnrAndLevel(LevelIndex, SnrVectorOrScalar, NR_Tables.MCS_TABLE_1)
+    [LevelVector, SnrVector, CurveParameter] = CheckArgumentsForSnrAndLevel(LevelIndex, SnrVectorOrScalar, NR_Table.MCS_TABLE_1)
     MyPlotFunction(CalculateEfficiency(LevelVector, SnrVector, CurveParameter, StyleParameter))
 
 def PlotEfficiencyforMcsTable2(LevelIndex, SnrVectorOrScalar, StyleParameter):
-    [LevelVector, SnrVector, CurveParameter] = CheckArgumentsForSnrAndLevel(LevelIndex, SnrVectorOrScalar, NR_Tables.MCS_TABLE_2)
+    [LevelVector, SnrVector, CurveParameter] = CheckArgumentsForSnrAndLevel(LevelIndex, SnrVectorOrScalar, NR_Table.MCS_TABLE_2)
     MyPlotFunction(CalculateEfficiency(LevelVector, SnrVector, CurveParameter, StyleParameter))
 
 def getCurveParameter(TableType):
-    if TableType is NR_Tables.CQI_TABLE_2: CurveParameter = getCurveParameterForCqiTable2()
-    if TableType is NR_Tables.MCS_TABLE_1: CurveParameter = getCurveParameterForMcsTable1()
-    if TableType is NR_Tables.MCS_TABLE_2: CurveParameter = getCurveParameterForMcsTable2()
+    if TableType is NR_Table.CQI_TABLE_2: CurveParameter = getCurveParameterForCqiTable2()
+    if TableType is NR_Table.MCS_TABLE_1: CurveParameter = getCurveParameterForMcsTable1()
+    if TableType is NR_Table.MCS_TABLE_2: CurveParameter = getCurveParameterForMcsTable2()
     return CurveParameter
 
 def CalculateEfficiency(LevelIndex, SnrVector, CurveParameter):
@@ -58,7 +58,7 @@ def CalculateEfficiency(LevelIndex, SnrVector, CurveParameter):
         CodeRate = np.append(CodeRate, CurveParameter[n, 1])
         MaximumRate = np.append(MaximumRate, CurveParameter[n, 2])
     DataY = getEfficiency(SnrVector, CodeRate, SnrFactor, MaximumRate)
-    return [np.matlib.repmat(SnrVector, len(DataY), 1), DataY]
+    return [np.matlib.repmat(SnrVector, len(DataY), 1), DataY] 
 
 def CalculateBler(LevelIndex, SnrVector, CurveParameter):
     SnrFactor, CodeRate, MaximumRate = [], [], []
@@ -73,7 +73,8 @@ def CheckArgumentsForSnrAndLevel(LevelIndex, SnrVectorOrScalar, DedicatedTable):
     LevelVector = LevelVectorCreator(LevelIndex)
     SnrVector = SnrVectorCreator(SnrVectorOrScalar)
     CurveParameter = getCurveParameter(DedicatedTable)
-    if np.max(LevelVector) > np.max(getLevelIndex(DedicatedTable)) or np.min(LevelVector) < np.min(getLevelIndex(DedicatedTable)):
+    if (np.max(LevelVector) > np.max(getLevelIndex(DedicatedTable)) 
+    or  np.min(LevelVector) < np.min(getLevelIndex(DedicatedTable))):
          raise NotImplementedError('No data found') 
     return [LevelVector, SnrVector, CurveParameter]
 

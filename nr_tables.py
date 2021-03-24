@@ -1,12 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy.matlib as np
-from PlotAwgn import NR_Tabels
+from PlotAwgn import NR_Table
 from enum import Enum, auto
 import math
-class NR_Table(Enum):
-    CQI_TABLE_2 = auto()
-    MCS_TABLE_1 = auto()
-    MCS_TABLE_2 = auto()
 class ModulationOrder(Enum):
     QPSK = 4
     QAM_16 = 16
@@ -51,9 +47,9 @@ class CodeRateForMcsTable2(Enum):
          841/1024, 885/1024, 916.5/1024, 948/1024]
 
 def getLevelIndex(TableType):
-    if TableType is NR_Tabels.CQI_TABLE_2: return np.linspace(1,15,15)
-    if TableType is NR_Tabels.MCS_TABLE_1: return np.linspace(0,28,29)
-    if TableType is NR_Tabels.MCS_TABLE_2: return np.linspace(0,27,28)
+    if TableType is NR_Table.CQI_TABLE_2: return np.linspace(1,15,15)
+    if TableType is NR_Table.MCS_TABLE_1: return np.linspace(0,28,29)
+    if TableType is NR_Table.MCS_TABLE_2: return np.linspace(0,27,28)
 
 def getCurveParameterForCqiTable2():
     curve = np.array(([-7.8269, 0.5938, math.log2(ModulationOrder.QPSK.value  ) * CodeRateForCqiTable2.LEVEL_01.value],    
