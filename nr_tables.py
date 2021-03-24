@@ -1,8 +1,11 @@
 import matplotlib.pyplot as plt
 import numpy.matlib as np
-from PlotAwgn import NR_Table
-from enum import Enum, auto
+from enum import Enum, auto, IntEnum
 import math
+class NR_Table(Enum):
+    CQI_TABLE_2 = auto()
+    MCS_TABLE_1 = auto()
+    MCS_TABLE_2 = auto()
 class ModulationOrder(Enum):
     QPSK = 4
     QAM_16 = 16
@@ -46,10 +49,47 @@ class CodeRateForMcsTable2(Enum):
          682.5/1024, 711/1024, 754/1024, 797/1024, 
          841/1024, 885/1024, 916.5/1024, 948/1024]
 
-def getLevelIndex(TableType):
-    if TableType is NR_Table.CQI_TABLE_2: return np.linspace(1,15,15)
-    if TableType is NR_Table.MCS_TABLE_1: return np.linspace(0,28,29)
-    if TableType is NR_Table.MCS_TABLE_2: return np.linspace(0,27,28)
+class LevelIndicesForCqiTable2(Enum):
+    [LEVEL_01, LEVEL_02, LEVEL_03, LEVEL_04, LEVEL_05,
+     LEVEL_06, LEVEL_07, LEVEL_08, LEVEL_09, LEVEL_10,
+     LEVEL_11, LEVEL_12, LEVEL_13, LEVEL_14, LEVEL_15
+    ] = np.linspace(1,15,15)
+class LevelIndicesForMcsTable1(Enum):
+    [LEVEL_00, LEVEL_01, LEVEL_02, LEVEL_03, LEVEL_04,
+     LEVEL_05, LEVEL_06, LEVEL_07, LEVEL_08, LEVEL_09,
+     LEVEL_10, LEVEL_11, LEVEL_12, LEVEL_13, LEVEL_14,
+     LEVEL_15, LEVEL_16, LEVEL_17, LEVEL_18, LEVEL_19,
+     LEVEL_20, LEVEL_21, LEVEL_22, LEVEL_23, LEVEL_24,
+     LEVEL_25, LEVEL_26, LEVEL_27, LEVEL_28
+    ] = np.linspace(0,28,29)
+class LevelIndicesForMcsTable2(Enum):
+    [LEVEL_00, LEVEL_01, LEVEL_02, LEVEL_03, LEVEL_04,
+     LEVEL_05, LEVEL_06, LEVEL_07, LEVEL_08, LEVEL_09,
+     LEVEL_10, LEVEL_11, LEVEL_12, LEVEL_13, LEVEL_14,
+     LEVEL_15, LEVEL_16, LEVEL_17, LEVEL_18, LEVEL_19,
+     LEVEL_20, LEVEL_21, LEVEL_22, LEVEL_23, LEVEL_24,
+     LEVEL_25, LEVEL_26, LEVEL_27
+    ] = np.linspace(0,27,28)
+
+def getCurveParameter(DedicatedTable):
+    if DedicatedTable is NR_Table.CQI_TABLE_2: return getCurveParameterForCqiTable2()
+    if DedicatedTable is NR_Table.MCS_TABLE_1: return getCurveParameterForMcsTable1()
+    if DedicatedTable is NR_Table.MCS_TABLE_2: return getCurveParameterForMcsTable2()
+    
+def getStringIndexLevel(DedicatedTable):
+    if DedicatedTable is NR_Table.CQI_TABLE_2: return [Level.name for Level in LevelIndicesForCqiTable2]
+    if DedicatedTable is NR_Table.MCS_TABLE_1: return [Level.name for Level in LevelIndicesForMcsTable1]
+    if DedicatedTable is NR_Table.MCS_TABLE_2: return [Level.name for Level in LevelIndicesForMcsTable2]
+
+def getCodeRate(DedicatedTable):
+    if DedicatedTable is NR_Table.CQI_TABLE_2: return [CodeRate.value for CodeRate in CodeRateForCqiTable2]
+    if DedicatedTable is NR_Table.MCS_TABLE_1: return [CodeRate.value for CodeRate in CodeRateForMcsTable1]
+    if DedicatedTable is NR_Table.MCS_TABLE_2: return [CodeRate.value for CodeRate in CodeRateForMcsTable2]
+
+def getMinAndMaxLevelIndices(DedicatedTable):
+    if DedicatedTable is NR_Table.CQI_TABLE_2: return [LevelIndicesForCqiTable2.LEVEL_01.value, LevelIndicesForCqiTable2.LEVEL_15.value]
+    if DedicatedTable is NR_Table.MCS_TABLE_1: return [LevelIndicesForMcsTable1.LEVEL_00.value, LevelIndicesForMcsTable1.LEVEL_28.value]
+    if DedicatedTable is NR_Table.MCS_TABLE_2: return [LevelIndicesForMcsTable2.LEVEL_00.value, LevelIndicesForMcsTable2.LEVEL_27.value]
 
 def getCurveParameterForCqiTable2():
     curve = np.array(([-7.8269, 0.5938, math.log2(ModulationOrder.QPSK.value  ) * CodeRateForCqiTable2.LEVEL_01.value],    

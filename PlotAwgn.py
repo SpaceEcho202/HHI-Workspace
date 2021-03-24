@@ -1,55 +1,70 @@
-from nr_tables import *
+from nr_tables import getCurveParameter
+from nr_tables import getMinAndMaxLevelIndices
+from nr_tables import getStringIndexLevel
+from nr_tables import getCodeRate
+from nr_tables import NR_Table
 import matplotlib.pyplot as plt
 from enum import Enum, auto
 import scipy.special
 import numpy.matlib
 import numpy as np
 import math
-class NR_Table(Enum):
-    CQI_TABLE_2 = auto()
-    MCS_TABLE_1 = auto()
-    MCS_TABLE_2 = auto()
 class StyleParameter():
-    SnrStart = -10
-    SnrEnd = 20 
-    SnrResolution = 0.1
-    FigSave = False
-    CscSave = False
+    SnrStart        = -10
+    SnrEnd          = 20 
+    SnrResolution   = 0.1
+    FigSave         = False
+    CscSave         = False
+    MinorGrid       = True
+    MajaorGrid      = True
+    LineStyle       = 'solid'
+    LineWidth       = 1
+    Label           = []
+    YScale          = 'linear'
 
-def MyPlotFunction(PlottingData, StyleParameter):
+def MyPlotFunction(PlottingData, styleParameter, DedicatedTable):
+    plt.grid(b=True, which='major', color='#666666', linestyle='-') if StyleParameter.MajaorGrid else None
+    plt.minorticks_on(), plt.grid(b=True, which='minor',color='#999999', linestyle='-', alpha=0.2) if StyleParameter.MinorGrid else None 
+
     for n in range(len(PlottingData[0])):
-        plt.plot(PlottingData[0][n], PlottingData[1][n])
+        plt.plot(PlottingData[0][n], PlottingData[1][n],
+        label     = StyleParameter.Label[n], 
+        linestyle = StyleParameter.LineStyle,
+        linewidth = StyleParameter.LineWidth)
+
+    plt.legend(bbox_to_anchor=(1,1), loc="upper left", fontsize='x-small', fancybox=True)
     plt.show()
 
-def PlotBlerforCqiTable2(LevelIndex, SnrVectorOrScalar, StyleParameter):
-    [LevelVector, SnrVector, CurveParameter] = CheckArgumentsForSnrAndLevel(LevelIndex, SnrVectorOrScalar, NR_Table.CQI_TABLE_2)
-    MyPlotFunction(CalculateBler(LevelVector, SnrVector, CurveParameter, StyleParameter))
+def LabelStringForPlotFunction(LevelVector, DedicatedTable):
+    for n in LevelVector:
+        StyleParameter.Label = np.append(StyleParameter.Label, r"{} - $R = {:.2f}".
+        format(getStringIndexLevel(DedicatedTable)[n], getCodeRate(DedicatedTable)[n]))
+    print(StyleParameter.Label)
 
-def PlotBlerforMcsTable1(LevelIndex, SnrVectorOrScalar, StyleParameter):
-    [LevelVector, SnrVector, CurveParameter] = CheckArgumentsForSnrAndLevel(LevelIndex, SnrVectorOrScalar, NR_Table.MCS_TABLE_1)
-    MyPlotFunction(CalculateBler(LevelVector, SnrVector, CurveParameter, StyleParameter))
+def PlotBlerforCqiTable2(LevelIndex, SnrVectorOrScalar, styleParameter):
+    [LevelVector, SnrVector, CurveParameter] = CreateValidDataForPlot(LevelIndex, SnrVectorOrScalar, NR_Table.CQI_TABLE_2)
+    LabelStringForPlotFunction(LevelVector, NR_Table.CQI_TABLE_2)
+    MyPlotFunction(CalculateBler(LevelVector, SnrVector, CurveParameter), styleParameter, NR_Table.CQI_TABLE_2)
 
-def PlotBlerforMcsTable2(LevelIndex, SnrVectorOrScalar, StyleParameter):
-    [LevelVector, SnrVector, CurveParameter] = CheckArgumentsForSnrAndLevel(LevelIndex, SnrVectorOrScalar, NR_Table.MCS_TABLE_2)
-    MyPlotFunction(CalculateBler(LevelVector, SnrVector, CurveParameter, StyleParameter))
+def PlotBlerforMcsTable1(LevelIndex, SnrVectorOrScalar, styleParameter):
+    [LevelVector, SnrVector, CurveParameter] = CreateValidDataForPlot(LevelIndex, SnrVectorOrScalar, NR_Table.MCS_TABLE_1)
+    MyPlotFunction(CalculateBler(LevelVector, SnrVector, CurveParameter), styleParameter, NR_Table.MCS_TABLE_1)
 
-def PlotEfficiencyforCqiTable2(LevelIndex, SnrVectorOrScalar, StyleParameter):
-    [LevelVector, SnrVector, CurveParameter] = CheckArgumentsForSnrAndLevel(LevelIndex, SnrVectorOrScalar, NR_Table.CQI_TABLE_2)
-    MyPlotFunction(CalculateEfficiency(LevelVector, SnrVector, CurveParameter, StyleParameter))
+def PlotBlerforMcsTable2(LevelIndex, SnrVectorOrScalar, styleParameter):
+    [LevelVector, SnrVector, CurveParameter] = CreateValidDataForPlot(LevelIndex, SnrVectorOrScalar, NR_Table.MCS_TABLE_2)
+    MyPlotFunction(CalculateBler(LevelVector, SnrVector, CurveParameter), styleParameter)
 
-def PlotEfficiencyforMcsTable1(LevelIndex, SnrVectorOrScalar, StyleParameter):
-    [LevelVector, SnrVector, CurveParameter] = CheckArgumentsForSnrAndLevel(LevelIndex, SnrVectorOrScalar, NR_Table.MCS_TABLE_1)
-    MyPlotFunction(CalculateEfficiency(LevelVector, SnrVector, CurveParameter, StyleParameter))
+def PlotEfficiencyforCqiTable2(LevelIndex, SnrVectorOrScalar, styleParameter):
+    [LevelVector, SnrVector, CurveParameter] = CreateValidDataForPlot(LevelIndex, SnrVectorOrScalar, NR_Table.CQI_TABLE_2)
+    MyPlotFunction(CalculateEfficiency(LevelVector, SnrVector, CurveParameter), styleParameter)
 
-def PlotEfficiencyforMcsTable2(LevelIndex, SnrVectorOrScalar, StyleParameter):
-    [LevelVector, SnrVector, CurveParameter] = CheckArgumentsForSnrAndLevel(LevelIndex, SnrVectorOrScalar, NR_Table.MCS_TABLE_2)
-    MyPlotFunction(CalculateEfficiency(LevelVector, SnrVector, CurveParameter, StyleParameter))
+def PlotEfficiencyforMcsTable1(LevelIndex, SnrVectorOrScalar, styleParameter):
+    [LevelVector, SnrVector, CurveParameter] = CreateValidDataForPlot(LevelIndex, SnrVectorOrScalar, NR_Table.MCS_TABLE_1)
+    MyPlotFunction(CalculateEfficiency(LevelVector, SnrVector, CurveParameter), styleParameter)
 
-def getCurveParameter(TableType):
-    if TableType is NR_Table.CQI_TABLE_2: CurveParameter = getCurveParameterForCqiTable2()
-    if TableType is NR_Table.MCS_TABLE_1: CurveParameter = getCurveParameterForMcsTable1()
-    if TableType is NR_Table.MCS_TABLE_2: CurveParameter = getCurveParameterForMcsTable2()
-    return CurveParameter
+def PlotEfficiencyforMcsTable2(LevelIndex, SnrVectorOrScalar, styleParameter):
+    [LevelVector, SnrVector, CurveParameter] = CreateValidDataForPlot(LevelIndex, SnrVectorOrScalar, NR_Table.MCS_TABLE_2)
+    MyPlotFunction(CalculateEfficiency(LevelVector, SnrVector, CurveParameter), styleParameter)
 
 def CalculateEfficiency(LevelIndex, SnrVector, CurveParameter):
     SnrFactor, CodeRate, MaximumRate = [], [], []
@@ -69,13 +84,12 @@ def CalculateBler(LevelIndex, SnrVector, CurveParameter):
     DataY = getBler(SnrVector, CodeRate, SnrFactor, MaximumRate)
     return [np.matlib.repmat(SnrVector, len(DataY), 1), DataY]
 
-def CheckArgumentsForSnrAndLevel(LevelIndex, SnrVectorOrScalar, DedicatedTable):
-    LevelVector = LevelVectorCreator(LevelIndex)
-    SnrVector = SnrVectorCreator(SnrVectorOrScalar)
+def CreateValidDataForPlot(LevelIndex, SnrVectorOrScalar, DedicatedTable):
     CurveParameter = getCurveParameter(DedicatedTable)
-    if (np.max(LevelVector) > np.max(getLevelIndex(DedicatedTable)) 
-    or  np.min(LevelVector) < np.min(getLevelIndex(DedicatedTable))):
-         raise NotImplementedError('No data found') 
+    [MinIndice, MaxIndice] = getMinAndMaxLevelIndices(DedicatedTable)
+    [LevelVector, MinLevel, MaxLevel] = LevelVectorCreator(LevelIndex, DedicatedTable)
+    if MinLevel < MinIndice or MaxLevel > MaxIndice: raise NotImplementedError("Data not found")
+    SnrVector = SnrVectorCreator(SnrVectorOrScalar)
     return [LevelVector, SnrVector, CurveParameter]
 
 def SnrVectorCreator(SnrVectorOrScalar):
@@ -87,9 +101,11 @@ def SnrVectorCreator(SnrVectorOrScalar):
         SnrVector = np.array(SnrVectorOrScalar)
     return SnrVector
 
-def LevelVectorCreator(LevelIndex):
+def LevelVectorCreator(LevelIndex, DedicatedTable):
     np.array(LevelIndex) if np.isscalar(LevelIndex) else LevelIndex
-    return LevelIndex
+    [LevelIndexMin,LevelIndexMax] = [np.min(LevelIndex), np.max(LevelIndex)]
+    if DedicatedTable is NR_Table.CQI_TABLE_2: LevelIndex = np.array(LevelIndex) - 1 
+    return [LevelIndex, LevelIndexMin, LevelIndexMax]
 
 def getBler(SnrInDecibel, CodeRateFactor, SnrFactor, MaximumRate):
     ScaleSnr = [((SnrInDecibel)-SnrFactor[i])
@@ -101,5 +117,4 @@ def getEfficiency(SnrInDecibel, CodeRateFactor, SnrFactor, MaximumRate):
         getBler(SnrInDecibel, CodeRateFactor, SnrFactor, MaximumRate))
     return [((1.0 - Bler[i]) * MaximumRate[i]) for i in range(len(MaximumRate))]
 
-
-PlotBlerforCqiTable2([10, 12], [], 0)
+PlotBlerforCqiTable2([1, 12, 15], [], 0)
