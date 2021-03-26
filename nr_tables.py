@@ -3,9 +3,9 @@ import numpy.matlib as np
 from enum import Enum, auto, IntEnum
 import math
 class NR_Table(Enum):
-    CQI_TABLE_2 = auto()
-    MCS_TABLE_1 = auto()
-    MCS_TABLE_2 = auto()
+    CQI_TABLE_2 = "Cqi-Table2"
+    MCS_TABLE_1 = "Mcs-Table1"
+    MCS_TABLE_2 = "Mcs-Table2"
 class ModulationOrder(Enum):
     QPSK    = 4
     QAM_16  = 16
