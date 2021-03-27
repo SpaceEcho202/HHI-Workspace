@@ -21,7 +21,7 @@ class StyleParameter():
     SnrStart        = -10
     SnrEnd          = 20 
     SnrResolution   = 0.1
-    FigSave         = False
+    FigSave         = True
     CscSave         = True
     MinorGrid       = True
     MajaorGrid      = True
@@ -32,17 +32,28 @@ class StyleParameter():
     Ylim            = None
     YLabel          = None
     Xlabel          = None
+    Xlim            = None
+    FigTitle        = None
 
-def MyPlotFunction(PlottingData, DedicatedTable, DedicatedPlotType):
+class AxisIndex(Enum):
+    X_VECTOR = 0
+    Y_VECTOR = 1
+
+def MyPlotFunction(LevelVector ,PlottingData, DedicatedTable, DedicatedPlotType):
     plt.grid(b=True, which='major', color='#666666', linestyle='-') if StyleParameter.MajaorGrid else None
     plt.minorticks_on(), plt.grid(b=True, which='minor',color='#999999', linestyle='-', alpha=0.2) if StyleParameter.MinorGrid else None 
-    print(len(PlottingData[0]))
-    for levelIndex in range(len(PlottingData[0])):
-        plt.plot(PlottingData[0][levelIndex], PlottingData[1][levelIndex],
+
+    CsvCreator(LevelVector, PlottingData, DedicatedTable, DedicatedPlotType)
+    LabelStringForPlotFunction(LevelVector, DedicatedTable)
+    AxisScaleAndTitleCreator(PlottingData, DedicatedPlotType, DedicatedTable)
+    
+    for levelIndex in range(len(PlottingData[AxisIndex.X_VECTOR.value])):
+        plt.plot(PlottingData[AxisIndex.X_VECTOR.value][levelIndex], PlottingData[AxisIndex.Y_VECTOR.value][levelIndex],
         label     = StyleParameter.Label[levelIndex], 
         linestyle = StyleParameter.LineStyle,
         linewidth = StyleParameter.LineWidth)
 
+    if StyleParameter.FigSave: plt.savefig(str.lower(r"{}_{}".format(DedicatedTable.name, DedicatedPlotType.name)))
     plt.legend(bbox_to_anchor=(1,1), loc="upper left", fontsize='x-small', fancybox=True)
     plt.show()
 
@@ -61,54 +72,45 @@ def CsvCreator(LevelVector, PlottingData, DedicatedTable, DedicatedPlotType):
             CsvHeader = r"SnrInDezibel;{};".format(DedicatedPlotType.name)
             f = open(CsvTitle+".csv","w")
             f.write(CsvHeader+"\n")
-            for DataIndex in range(len(PlottingData[0][labelIndex])):
-                CsvData = r"{:f};{:f}".format(PlottingData[0][labelIndex][DataIndex],
-                PlottingData[1][labelIndex][DataIndex])    
+        for CurveIndex in range(len(PlottingData[AxisIndex.X_VECTOR.value])):
+            for DataIndex in range(len(PlottingData[AxisIndex.X_VECTOR.value][CurveIndex])):
+                CsvData = r"{:f};{:f}".format(PlottingData[AxisIndex.X_VECTOR.value][CurveIndex][DataIndex],
+                PlottingData[AxisIndex.Y_VECTOR.value][CurveIndex][DataIndex])    
                 f.write(CsvData+"\n")
         f.close()
-
                 
-def AxisScaleAndTitleCreator(DedicatedPlotType, DedicatedTable):
-    if DedicatedPlotType is PlotType.BLER: [StyleParameter.YLabel, StyleParameter.Ylim] = r"{}".format(PlotType.BLER), (10e-6, 0)
-    if DedicatedPlotType is PlotType.EFFICIENCY: StyleParameter.YLabel = r"{}".format(PlotType.EFFICIENCY.name)
-    StyleParameter.Title = r"{}".format(DedicatedTable)
+def AxisScaleAndTitleCreator(PlottingData, DedicatedPlotType, DedicatedTable):
+    if DedicatedPlotType is PlotType.BLER: [StyleParameter.YLabel, StyleParameter.Ylim, StyleParameter.YScale] = (r"{}".format(PlotType.BLER.name), (10e-6, 1), 'log')
+    if DedicatedPlotType is PlotType.EFFICIENCY: [StyleParameter.YLabel, StyleParameter.Ylim, StyleParameter.YScale] = (r"{}".format(PlotType.EFFICIENCY.value), 
+    (0, np.ceil(np.max(PlottingData[AxisIndex.Y_VECTOR.value]))), 'linear')
+    StyleParameter.Xlim = (np.min(PlottingData[AxisIndex.X_VECTOR.value]), np.max(PlottingData[AxisIndex.X_VECTOR.value]))
+    StyleParameter.FigTitle = r"{}".format(DedicatedTable.name)
+    plt.title(StyleParameter.FigTitle), plt.yscale(StyleParameter.YScale), plt.ylim(StyleParameter.Ylim), plt.ylabel(StyleParameter.YLabel)
+
 
 def PlotBlerforCqiTable2(LevelIndex, SnrVectorOrScalar):
-    CurveParameter = getCurveParameterForCqiTable2()
     [LevelVector, SnrVector] = CreateValidDataForPlot(LevelIndex, SnrVectorOrScalar, NR_Table.CQI_TABLE_2)
-    LabelStringForPlotFunction(LevelVector, NR_Table.CQI_TABLE_2)
-    CsvCreator(LevelVector ,CalculateBler(LevelVector, SnrVector, CurveParameter), NR_Table.CQI_TABLE_2, PlotType.BLER)
-    MyPlotFunction(CalculateBler(LevelVector, SnrVector, CurveParameter), NR_Table.CQI_TABLE_2, PlotType.BLER)
+    MyPlotFunction(LevelVector ,CalculateBler(LevelVector, SnrVector, getCurveParameterForCqiTable2()), NR_Table.CQI_TABLE_2, PlotType.BLER)
 
 def PlotBlerforMcsTable1(LevelIndex, SnrVectorOrScalar):
-    CurveParameter = getCurveParameterForMcsTable1()
     [LevelVector, SnrVector] = CreateValidDataForPlot(LevelIndex, SnrVectorOrScalar, NR_Table.MCS_TABLE_1)
-    LabelStringForPlotFunction(LevelVector, NR_Table.MCS_TABLE_1)
-    MyPlotFunction(CalculateBler(LevelVector, SnrVector, CurveParameter), NR_Table.MCS_TABLE_1, PlotType.BLER)
+    MyPlotFunction(LevelVector ,CalculateBler(LevelVector, SnrVector, getCurveParameterForMcsTable1()), NR_Table.MCS_TABLE_1, PlotType.BLER)
 
 def PlotBlerforMcsTable2(LevelIndex, SnrVectorOrScalar):
-    CurveParameter = getCurveParameterForMcsTable2()
     [LevelVector, SnrVector] = CreateValidDataForPlot(LevelIndex, SnrVectorOrScalar, NR_Table.MCS_TABLE_2)
-    LabelStringForPlotFunction(LevelVector, NR_Table.MCS_TABLE_2)
-    MyPlotFunction(CalculateBler(LevelVector, SnrVector, CurveParameter), NR_Table.MCS_TABLE_2, PlotType.BLER)
+    MyPlotFunction(LevelVector, CalculateBler(LevelVector, SnrVector, getCurveParameterForMcsTable2()), NR_Table.MCS_TABLE_2, PlotType.BLER)
 
 def PlotEfficiencyforCqiTable2(LevelIndex, SnrVectorOrScalar):
-    CurveParameter = getCurveParameterForCqiTable2()
     [LevelVector, SnrVector] = CreateValidDataForPlot(LevelIndex, SnrVectorOrScalar, NR_Table.CQI_TABLE_2)
-    LabelStringForPlotFunction(LevelVector, NR_Table.CQI_TABLE_2)
-    MyPlotFunction(CalculateEfficiency(LevelVector, SnrVector, CurveParameter), NR_Table.CQI_TABLE_2, PlotType.EFFICIENCY)
+    MyPlotFunction(LevelVector, CalculateEfficiency(LevelVector, SnrVector, getCurveParameterForCqiTable2()), NR_Table.CQI_TABLE_2, PlotType.EFFICIENCY)
 
-def PlotEfficiencyforMcsTable1(LevelIndex, SnrVectorOrScalar):
-    CurveParameter = getCurveParameterForCqiTable2()
+def PlotEfficiencyforMcsTable1(LevelIndex, SnrVectorOrScalar):    
     [LevelVector, SnrVector] = CreateValidDataForPlot(LevelIndex, SnrVectorOrScalar, NR_Table.MCS_TABLE_1)
-    LabelStringForPlotFunction(LevelVector, NR_Table.MCS_TABLE_1)
-    MyPlotFunction(CalculateEfficiency(LevelVector, SnrVector, CurveParameter), NR_Table.MCS_TABLE_1, PlotType.EFFICIENCY)
+    MyPlotFunction(LevelVector, CalculateEfficiency(LevelVector, SnrVector, getCurveParameterForMcsTable1()), NR_Table.MCS_TABLE_1, PlotType.EFFICIENCY)
 
 def PlotEfficiencyforMcsTable2(LevelIndex, SnrVectorOrScalar):
-    CurveParameter = getCurveParameterForCqiTable2()
     [LevelVector, SnrVector] = CreateValidDataForPlot(LevelIndex, SnrVectorOrScalar, NR_Table.MCS_TABLE_2)
-    LabelStringForPlotFunction(LevelVector, NR_Table.MCS_TABLE_2)
-    MyPlotFunction(CalculateEfficiency(LevelVector, SnrVector, CurveParameter), NR_Table.MCS_TABLE_2, PlotType.EFFICIENCY)
+    MyPlotFunction(LevelVector, CalculateEfficiency(LevelVector, SnrVector, getCurveParameterForMcsTable2()), NR_Table.MCS_TABLE_2, PlotType.EFFICIENCY)
 
 def CalculateEfficiency(LevelIndex, SnrVector, CurveParameter):
     SnrFactor, CodeRate, MaximumRate = [], [], []
@@ -159,3 +161,4 @@ def getEfficiency(SnrInDecibel, CodeRateFactor, SnrFactor, MaximumRate):
     return [((1.0 - Bler[i]) * MaximumRate[i]) for i in range(len(MaximumRate))]
 
 PlotBlerforCqiTable2([1, 2], [])
+PlotEfficiencyforMcsTable1([0, 2], [])

@@ -105,12 +105,15 @@ def getCodeRate(DedicatedTable):
     if DedicatedTable is NR_Table.MCS_TABLE_2: return [CodeRate.value[IndexName.CODE_RATE.value] for CodeRate in NrParameterForMcsTable2]
 
 def getStringModulationOrder(DedicatedTable):
-    if  DedicatedTable is NR_Table.CQI_TABLE_2: Parameter =  [Parameter.value[IndexName.MODULATION_ORDER.value] for Parameter in NrParameterForCqiTable2]
-    return [Modulation.name for Modulation in Parameter]
-    if  DedicatedTable is NR_Table.CQI_TABLE_2: Parameter =  [Parameter.value[IndexName.MODULATION_ORDER.value] for Parameter in NrParameterForMcsTable1]
-    return [Modulation.name for Modulation in Parameter]
-    if  DedicatedTable is NR_Table.CQI_TABLE_2: Parameter =  [Parameter.value[IndexName.MODULATION_ORDER.value] for Parameter in NrParameterForMcsTable2]
-    return [Modulation.name for Modulation in Parameter]
+    if  DedicatedTable is NR_Table.CQI_TABLE_2:
+        Parameter =  [Parameter.value[IndexName.MODULATION_ORDER.value] for Parameter in NrParameterForCqiTable2]
+        return [Modulation.name for Modulation in Parameter]
+    if  DedicatedTable is NR_Table.MCS_TABLE_1: 
+        Parameter =  [Parameter.value[IndexName.MODULATION_ORDER.value] for Parameter in NrParameterForMcsTable1]
+        return [Modulation.name for Modulation in Parameter]
+    if  DedicatedTable is NR_Table.MCS_TABLE_2: 
+        Parameter =  [Parameter.value[IndexName.MODULATION_ORDER.value] for Parameter in NrParameterForMcsTable2]
+        return [Modulation.name for Modulation in Parameter]
 
 def getMinAndMaxLevelIndices(DedicatedTable):
     if DedicatedTable is NR_Table.CQI_TABLE_2: return [NrParameterForCqiTable2.LEVEL_01.value[IndexName.LEVEL_INDEX.value], NrParameterForCqiTable2.LEVEL_15.value[IndexName.LEVEL_INDEX.value]] 
