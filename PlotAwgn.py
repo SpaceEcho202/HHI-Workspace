@@ -17,6 +17,10 @@ import math
 class PlotType(Enum):
     BLER = "Block Error Rate"
     EFFICIENCY = "Spectral efficiency in [bit's/Hz]"
+    SNR = "SNR[dB]"
+class AxisIndex(Enum):
+    X_VECTOR = 0
+    Y_VECTOR = 1
 class StyleParameter():
     SnrStart        = -10
     SnrEnd          = 20 
@@ -35,10 +39,6 @@ class StyleParameter():
     Xlim            = None
     FigTitle        = None
 
-class AxisIndex(Enum):
-    X_VECTOR = 0
-    Y_VECTOR = 1
-
 def MyPlotFunction(LevelVector ,PlottingData, DedicatedTable, DedicatedPlotType):
     plt.grid(b=True, which='major', color='#666666', linestyle='-') if StyleParameter.MajaorGrid else None
     plt.minorticks_on(), plt.grid(b=True, which='minor',color='#999999', linestyle='-', alpha=0.2) if StyleParameter.MinorGrid else None 
@@ -53,8 +53,8 @@ def MyPlotFunction(LevelVector ,PlottingData, DedicatedTable, DedicatedPlotType)
         linestyle = StyleParameter.LineStyle,
         linewidth = StyleParameter.LineWidth)
 
-    if StyleParameter.FigSave: plt.savefig(str.lower(r"{}_{}".format(DedicatedTable.name, DedicatedPlotType.name)))
     plt.legend(bbox_to_anchor=(1,1), loc="upper left", fontsize='x-small', fancybox=True)
+    if StyleParameter.FigSave: plt.savefig(str.lower(r"{}_{}".format(DedicatedTable.name, DedicatedPlotType.name)))
     plt.show()
 
 def LabelStringForPlotFunction(LevelVector, DedicatedTable):
@@ -66,26 +66,26 @@ def LabelStringForPlotFunction(LevelVector, DedicatedTable):
 
 def CsvCreator(LevelVector, PlottingData, DedicatedTable, DedicatedPlotType):
     if StyleParameter.CscSave: 
-        for labelIndex in LevelVector:
-            CsvTitle = str.lower(r"{}_{}_{}".format(DedicatedTable.name, 
-            DedicatedPlotType.name, getStringIndexLevel(DedicatedTable)[labelIndex]))
+        for (labelIndex, CurveIndex) in zip(LevelVector ,range(len(PlottingData[AxisIndex.Y_VECTOR.value]))):
+            CsvTitle = str.lower(r"{}_{}_{}".format(DedicatedTable.name, DedicatedPlotType.name, getStringIndexLevel(DedicatedTable)[labelIndex]))
             CsvHeader = r"SnrInDezibel;{};".format(DedicatedPlotType.name)
-            f = open(CsvTitle+".csv","w")
-            f.write(CsvHeader+"\n")
-        for CurveIndex in range(len(PlottingData[AxisIndex.X_VECTOR.value])):
+            CsvFile = open(CsvTitle+".csv","w")
+            CsvFile.write(CsvHeader+"\n")
             for DataIndex in range(len(PlottingData[AxisIndex.X_VECTOR.value][CurveIndex])):
                 CsvData = r"{:f};{:f}".format(PlottingData[AxisIndex.X_VECTOR.value][CurveIndex][DataIndex],
                 PlottingData[AxisIndex.Y_VECTOR.value][CurveIndex][DataIndex])    
-                f.write(CsvData+"\n")
-        f.close()
+                CsvFile.write(CsvData+"\n")
+            CsvFile.close()
                 
 def AxisScaleAndTitleCreator(PlottingData, DedicatedPlotType, DedicatedTable):
     if DedicatedPlotType is PlotType.BLER: [StyleParameter.YLabel, StyleParameter.Ylim, StyleParameter.YScale] = (r"{}".format(PlotType.BLER.name), (10e-6, 1), 'log')
     if DedicatedPlotType is PlotType.EFFICIENCY: [StyleParameter.YLabel, StyleParameter.Ylim, StyleParameter.YScale] = (r"{}".format(PlotType.EFFICIENCY.value), 
     (0, np.ceil(np.max(PlottingData[AxisIndex.Y_VECTOR.value]))), 'linear')
     StyleParameter.Xlim = (np.min(PlottingData[AxisIndex.X_VECTOR.value]), np.max(PlottingData[AxisIndex.X_VECTOR.value]))
+    StyleParameter.Xlabel = r"{}".format(PlotType.SNR.value)
     StyleParameter.FigTitle = r"{}".format(DedicatedTable.name)
     plt.title(StyleParameter.FigTitle), plt.yscale(StyleParameter.YScale), plt.ylim(StyleParameter.Ylim), plt.ylabel(StyleParameter.YLabel)
+    plt.xlim(StyleParameter.Xlim), plt.xlabel(StyleParameter.Xlabel)
 
 
 def PlotBlerforCqiTable2(LevelIndex, SnrVectorOrScalar):
@@ -138,7 +138,11 @@ def CreateValidDataForPlot(LevelIndex, SnrVectorOrScalar, DedicatedTable):
     return [LevelVector, SnrVector]
 
 def SnrVectorCreator(SnrVectorOrScalar):
-    if np.isscalar(SnrVectorOrScalar) or SnrVectorOrScalar == []:
+    if np.isscalar(SnrVectorOrScalar):
+        SnrVector = np.linspace(StyleParameter.SnrStart, SnrVectorOrScalar,
+                    int(abs(StyleParameter.SnrStart - SnrVectorOrScalar) /
+                    StyleParameter.SnrResolution + 1))
+    elif SnrVectorOrScalar == []:
         SnrVector = np.linspace(StyleParameter.SnrStart, StyleParameter.SnrEnd,
                     int(abs(StyleParameter.SnrStart - StyleParameter.SnrEnd) /
                     StyleParameter.SnrResolution + 1))
@@ -160,5 +164,5 @@ def getEfficiency(SnrInDecibel, CodeRateFactor, SnrFactor, MaximumRate):
     Bler = np.array(getBler(SnrInDecibel, CodeRateFactor, SnrFactor, MaximumRate))
     return [((1.0 - Bler[i]) * MaximumRate[i]) for i in range(len(MaximumRate))]
 
-PlotBlerforCqiTable2([1, 2], [])
-PlotEfficiencyforMcsTable1([0, 2], [])
+PlotBlerforCqiTable2([1, 2, 11, 13], 10)
+PlotEfficiencyforMcsTable1([0, 2, 4, 5], [])
