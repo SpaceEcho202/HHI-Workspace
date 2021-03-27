@@ -44,8 +44,8 @@ def MyPlotFunction(LevelVector ,PlottingData, DedicatedTable, DedicatedPlotType)
     plt.minorticks_on(), plt.grid(b=True, which='minor',color='#999999', linestyle='-', alpha=0.2) if StyleParameter.MinorGrid else None 
 
     CsvCreator(LevelVector, PlottingData, DedicatedTable, DedicatedPlotType)
-    LabelStringForPlotFunction(LevelVector, DedicatedTable)
     AxisScaleAndTitleCreator(PlottingData, DedicatedPlotType, DedicatedTable)
+    LabelStringForPlotFunction(LevelVector, DedicatedTable)
     
     for levelIndex in range(len(PlottingData[AxisIndex.X_VECTOR.value])):
         plt.plot(PlottingData[AxisIndex.X_VECTOR.value][levelIndex], PlottingData[AxisIndex.Y_VECTOR.value][levelIndex],
@@ -80,11 +80,13 @@ def CsvCreator(LevelVector, PlottingData, DedicatedTable, DedicatedPlotType):
 def AxisScaleAndTitleCreator(PlottingData, DedicatedPlotType, DedicatedTable):
     if DedicatedPlotType is PlotType.BLER: [StyleParameter.YLabel, StyleParameter.Ylim, StyleParameter.YScale] = (r"{}".format(PlotType.BLER.name), (10e-6, 1), 'log')
     if DedicatedPlotType is PlotType.EFFICIENCY: [StyleParameter.YLabel, StyleParameter.Ylim, StyleParameter.YScale] = (r"{}".format(PlotType.EFFICIENCY.value), 
-    (0, np.ceil(np.max(PlottingData[AxisIndex.Y_VECTOR.value]))), 'linear')
+        (0, np.ceil(np.max(PlottingData[AxisIndex.Y_VECTOR.value]))), 'linear')
     StyleParameter.Xlim = (np.min(PlottingData[AxisIndex.X_VECTOR.value]), np.max(PlottingData[AxisIndex.X_VECTOR.value]))
     StyleParameter.Xlabel = r"{}".format(PlotType.SNR.value)
     StyleParameter.FigTitle = r"{}".format(DedicatedTable.name)
-    plt.title(StyleParameter.FigTitle), plt.yscale(StyleParameter.YScale), plt.ylim(StyleParameter.Ylim), plt.ylabel(StyleParameter.YLabel)
+
+    plt.title(StyleParameter.FigTitle), plt.yscale(StyleParameter.YScale), 
+    plt.ylim(StyleParameter.Ylim), plt.ylabel(StyleParameter.YLabel)
     plt.xlim(StyleParameter.Xlim), plt.xlabel(StyleParameter.Xlabel)
 
 
@@ -164,5 +166,5 @@ def getEfficiency(SnrInDecibel, CodeRateFactor, SnrFactor, MaximumRate):
     Bler = np.array(getBler(SnrInDecibel, CodeRateFactor, SnrFactor, MaximumRate))
     return [((1.0 - Bler[i]) * MaximumRate[i]) for i in range(len(MaximumRate))]
 
-PlotBlerforCqiTable2([1, 2, 11, 13], 10)
+PlotBlerforCqiTable2([1, 2, 11, 13], np.linspace(-10, 10, 100))
 PlotEfficiencyforMcsTable1([0, 2, 4, 5], [])
