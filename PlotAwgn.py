@@ -43,12 +43,12 @@ class StyleParameter():
 
 def MyPlotFunction(DataX, DataY, *args, **kwargs):
 
-    if isinstance(args[2], NR_Table):
+    if len(args) > 2 and isinstance(args[2], NR_Table):
         PlotData = DataX, DataY
         styleParameter, LevelVector, DedicatedTable, DedicatedPlotType = args 
+        LabelStringForPlotFunction(styleParameter, LevelVector, DedicatedTable)
         CsvCreator(styleParameter, LevelVector, PlotData, DedicatedTable, DedicatedPlotType)
         AxisScaleAndTitleCreator(styleParameter, PlotData, DedicatedPlotType, DedicatedTable)
-        LabelStringForPlotFunction(styleParameter, LevelVector, DedicatedTable)
     else:
         styleParameter = getStyleParameter(args)
         PlotData = np.matlib.repmat(DataX, 1, 1), np.matlib.repmat(DataY, 1, 1)
@@ -108,7 +108,7 @@ def AxisScaleAndTitleCreator(styleParameter ,PlotData, DedicatedPlotType, Dedica
 
     styleParameter.Xlabel = r"{}".format(PlotType.SNR.value)
     styleParameter.Xlim = (np.min(PlotData[AxisIndex.X_VECTOR.value]), np.max(PlotData[AxisIndex.X_VECTOR.value]))
-    styleParameter.FigTitle = r"{}_{}".format(DedicatedTable.name, DedicatedPlotType.name)
+    styleParameter.FigTitle = r"{}-{}".format(DedicatedTable.value, DedicatedPlotType.name)
 
 def GetFigureSize(IsManyCurves):
     Dpi = 96
@@ -217,6 +217,6 @@ def getEfficiency(SnrInDecibel, CodeRateFactor, SnrFactor, MaximumRate):
 
 FigOption1 = StyleParameter()
 FigOption1.LineStyle = 'dashed'
-PlotBlerforCqiTable2([1, 2, 3], [])
+PlotBlerforCqiTable2([1, 2, 3],10)
 PlotBlerforCqiTable2([1, 2, 3], [], FigOption1)
 MyPlotFunction([0, 1, 2, 3],[0, 1, 2, 3])
