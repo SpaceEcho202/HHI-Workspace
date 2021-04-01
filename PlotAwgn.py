@@ -39,7 +39,8 @@ class StyleParameter():
         self.YLabel          = None
         self.Xlabel          = None
         self.Xlim            = None
-        self.FigTitle        = 'generic'       
+        self.FigTitle        = 'generic'     
+        self.FigSaveTitle    = 'generic'  
 
 def MyPlotFunction(DataX, DataY, *args, **kwargs):
 
@@ -74,7 +75,7 @@ def MyPlotFunction(DataX, DataY, *args, **kwargs):
     fig = plt.gcf()
     fig.set_size_inches(17, 8)
 
-    if styleParameter.FigSave: plt.savefig(str.lower(styleParameter.FigTitle), bbox_inches = 'tight')
+    if styleParameter.FigSave: plt.savefig(styleParameter.FigSaveTitle, bbox_inches = 'tight')
     plt.show()
 
 def LabelStringForPlotFunction(styleParameter ,LevelVector, DedicatedTable):
@@ -109,6 +110,7 @@ def AxisScaleAndTitleCreator(styleParameter ,PlotData, DedicatedPlotType, Dedica
     styleParameter.Xlabel = r"{}".format(PlotType.SNR.value)
     styleParameter.Xlim = (np.min(PlotData[AxisIndex.X_VECTOR.value]), np.max(PlotData[AxisIndex.X_VECTOR.value]))
     styleParameter.FigTitle = r"{}-{}".format(DedicatedTable.value, DedicatedPlotType.name)
+    styleParameter.FigSaveTitle = str.lower(r"{}_{}".format(DedicatedTable.name, DedicatedPlotType.name))
 
 def GetFigureSize(IsManyCurves):
     Dpi = 96
@@ -139,27 +141,27 @@ def PlotBlerforMcsTable1(LevelIndex, SnrVectorOrScalar, *args):
 
 def PlotBlerforMcsTable2(LevelIndex, SnrVectorOrScalar, *args):
     styleParameter = getStyleParameter(args)
-    LevelVector, SnrVector = CreateValidDataForPlot(LevelIndex, SnrVectorOrScalar, NR_Table.MCS_TABLE_2)
+    LevelVector, SnrVector = CreateValidDataForPlot(styleParameter, LevelIndex, SnrVectorOrScalar, NR_Table.MCS_TABLE_2)
     DataX, DataY = CalculateBler(LevelVector, SnrVector, getCurveParameterForMcsTable2())
-    MyPlotFunction(DataX, DataY, LevelVector ,NR_Table.MCS_TABLE_2, PlotType.BLER)
+    MyPlotFunction(DataX, DataY, styleParameter, LevelVector ,NR_Table.MCS_TABLE_2, PlotType.BLER)
 
 def PlotEfficiencyforCqiTable2(LevelIndex, SnrVectorOrScalar, *args):
     styleParameter = getStyleParameter(args)
-    LevelVector, SnrVector = CreateValidDataForPlot(LevelIndex, SnrVectorOrScalar, NR_Table.CQI_TABLE_2)
+    LevelVector, SnrVector = CreateValidDataForPlot(styleParameter, LevelIndex, SnrVectorOrScalar, NR_Table.CQI_TABLE_2)
     DataX, DataY = CalculateEfficiency(LevelVector, SnrVector, getCurveParameterForCqiTable2())
-    MyPlotFunction(DataX, DataY, LevelVector ,NR_Table.CQI_TABLE_2, PlotType.EFFICIENCY)
+    MyPlotFunction(DataX, DataY, styleParameter, LevelVector ,NR_Table.CQI_TABLE_2, PlotType.EFFICIENCY)
 
 def PlotEfficiencyforMcsTable1(LevelIndex, SnrVectorOrScalar, *args):   
     styleParameter = getStyleParameter(args) 
-    LevelVector, SnrVector = CreateValidDataForPlot(LevelIndex, SnrVectorOrScalar, NR_Table.MCS_TABLE_1)
+    LevelVector, SnrVector = CreateValidDataForPlot(styleParameter, LevelIndex, SnrVectorOrScalar, NR_Table.MCS_TABLE_1)
     DataX, DataY = CalculateEfficiency(LevelVector, SnrVector, getCurveParameterForMcsTable1())
-    MyPlotFunction(DataX, DataY, LevelVector ,NR_Table.MCS_TABLE_1, PlotType.EFFICIENCY)
+    MyPlotFunction(DataX, DataY, styleParameter, LevelVector ,NR_Table.MCS_TABLE_1, PlotType.EFFICIENCY)
 
 def PlotEfficiencyforMcsTable2(LevelIndex, SnrVectorOrScalar, *args):
     styleParameter = getStyleParameter(args) 
-    LevelVector, SnrVector = CreateValidDataForPlot(LevelIndex, SnrVectorOrScalar, NR_Table.MCS_TABLE_2)
+    LevelVector, SnrVector = CreateValidDataForPlot(styleParameter, LevelIndex, SnrVectorOrScalar, NR_Table.MCS_TABLE_2)
     DataX, DataY = CalculateEfficiency(LevelVector, SnrVector, getCurveParameterForMcsTable2())
-    MyPlotFunction(DataX, DataY, LevelVector ,NR_Table.MCS_TABLE_2, PlotType.EFFICIENCY)
+    MyPlotFunction(DataX, DataY, styleParameter, LevelVector ,NR_Table.MCS_TABLE_2, PlotType.EFFICIENCY)
 
 def CalculateEfficiency(LevelVector, SnrVector, CurveParameter):
     SnrFactor, CodeRate, MaximumRate = [], [], []
@@ -215,8 +217,11 @@ def getEfficiency(SnrInDecibel, CodeRateFactor, SnrFactor, MaximumRate):
     Bler = np.array(getBler(SnrInDecibel, CodeRateFactor, SnrFactor, MaximumRate))
     return [((1.0 - Bler[i]) * MaximumRate[i]) for i in range(len(MaximumRate))]
 
-FigOption1 = StyleParameter()
-FigOption1.LineStyle = 'dashed'
-PlotBlerforCqiTable2([1, 2, 3],10)
-PlotBlerforCqiTable2([1, 2, 3], [], FigOption1)
+FigOption1           = StyleParameter()
+FigOption1.LineStyle = 'solid'
+FigOption1.CsvSave   = True
+FigOption1.FigSave   = True
+
+PlotEfficiencyforCqiTable2(np.linspace(1,15,15), np.linspace(-10,20,100), FigOption1)
+
 MyPlotFunction([0, 1, 2, 3],[0, 1, 2, 3])
