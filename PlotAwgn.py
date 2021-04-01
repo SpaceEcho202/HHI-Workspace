@@ -222,6 +222,6 @@ FigOption1.LineStyle = 'solid'
 FigOption1.CsvSave   = True
 FigOption1.FigSave   = True
 
-PlotEfficiencyforCqiTable2(np.linspace(1,15,15), np.linspace(-10,20,100), FigOption1)
-
+PlotEfficiencyforCqiTable2(np.linspace(1,4,15), np.linspace(-10,20,100))
+PlotEfficiencyforMcsTable1(np.linspace(0,28,29),[])
 MyPlotFunction([0, 1, 2, 3],[0, 1, 2, 3])
