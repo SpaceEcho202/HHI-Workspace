@@ -23,13 +23,13 @@ class PlotType(Enum):
     SNR        = "SNR[dB]"
 class AxisIndex(Enum):
     '''
-
+    This class is used to assign readable indexes
     '''
     X_VECTOR = 0
     Y_VECTOR = 1
 class StyleParameter():
     '''
-    This class is used for the standard parameterization of the method Plot Function. 
+    This class is used for the standard parameterization of the MyPlotFunction. 
     '''
     def __init__(self):
         self.SnrStart        = -10
@@ -51,7 +51,12 @@ class StyleParameter():
         self.FigSaveTitle    = 'generic'  
 
 def MyPlotFunction(DataX, DataY, *args):
-
+    '''
+    This method is used to generate a plot based on the transferred X & Y vector. 
+    In addition, a style parameter object can be transferred, e.g. to insert axis labels.
+    When the implemented NR tables and the associated level indexes are transferred, 
+    the style parameters are generated automatically 
+    '''
     if len(args) > 2 and isinstance(args[2], NR_Table):
         PlotData = DataX, DataY
         styleParameter, LevelVector, DedicatedTable, DedicatedPlotType = args 
