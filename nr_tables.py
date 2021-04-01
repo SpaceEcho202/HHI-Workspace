@@ -42,8 +42,8 @@ class NrParameterForMcsTable1(Enum):
     LEVEL_05 = (5, ModulationOrder.QPSK,  379/1024)
     LEVEL_06 = (6, ModulationOrder.QPSK,  449/1024)
     LEVEL_07 = (7, ModulationOrder.QPSK,  526/1024)
-    LEVEL_08 = (8, ModulationOrder.QAM_16,602/1024)
-    LEVEL_09 = (9, ModulationOrder.QAM_16,679/1024)
+    LEVEL_08 = (8, ModulationOrder.QPSK,  602/1024)
+    LEVEL_09 = (9, ModulationOrder.QPSK,  679/1024)
     LEVEL_10 = (10,ModulationOrder.QAM_16,340/1024)
     LEVEL_11 = (11,ModulationOrder.QAM_16,378/1024)
     LEVEL_12 = (12,ModulationOrder.QAM_16,434/1024)
@@ -65,34 +65,34 @@ class NrParameterForMcsTable1(Enum):
     LEVEL_28 = (28,ModulationOrder.QAM_64,948/1024)
 class NrParameterForMcsTable2(Enum):
    #LEVEL-----Index---Modulationorder-------Coderate
-    LEVEL_00 = (0, ModulationOrder.QPSK,   120/1024)
-    LEVEL_01 = (1, ModulationOrder.QPSK,   193/1024)
-    LEVEL_02 = (2, ModulationOrder.QPSK,   308/1024)
-    LEVEL_03 = (3, ModulationOrder.QPSK,   449/1024)
-    LEVEL_04 = (4, ModulationOrder.QPSK,   602/1024)
-    LEVEL_05 = (5, ModulationOrder.QAM_16, 378/1024)
-    LEVEL_06 = (6, ModulationOrder.QAM_16, 434/1024)
-    LEVEL_07 = (7, ModulationOrder.QAM_16, 490/1024)
-    LEVEL_08 = (8, ModulationOrder.QAM_16, 553/1024)
-    LEVEL_09 = (9, ModulationOrder.QAM_16, 616/1024)
-    LEVEL_10 = (10,ModulationOrder.QAM_16, 658/1024)
-    LEVEL_11 = (11,ModulationOrder.QAM_64, 466/1024)
-    LEVEL_12 = (12,ModulationOrder.QAM_64, 517/1024)
-    LEVEL_13 = (13,ModulationOrder.QAM_64, 567/1024)
-    LEVEL_14 = (14,ModulationOrder.QAM_64, 616/1024)
-    LEVEL_15 = (15,ModulationOrder.QAM_64, 666/1024)
-    LEVEL_16 = (16,ModulationOrder.QAM_64, 719/1024)
-    LEVEL_17 = (17,ModulationOrder.QAM_64, 772/1024)
-    LEVEL_18 = (18,ModulationOrder.QAM_64, 822/1024)
-    LEVEL_19 = (19,ModulationOrder.QAM_64, 873/1024)
-    LEVEL_20 = (20,ModulationOrder.QAM_256,682.5/10)
-    LEVEL_21 = (21,ModulationOrder.QAM_256,711/1024)
-    LEVEL_22 = (22,ModulationOrder.QAM_256,754/1024)
-    LEVEL_23 = (23,ModulationOrder.QAM_256,797/1024)
-    LEVEL_24 = (24,ModulationOrder.QAM_256,841/1024)
-    LEVEL_25 = (25,ModulationOrder.QAM_256,885/1024)
-    LEVEL_26 = (26,ModulationOrder.QAM_256,916.5/10)
-    LEVEL_27 = (27,ModulationOrder.QAM_256,948/1024)
+    LEVEL_00 = (0, ModulationOrder.QPSK,     120/1024)
+    LEVEL_01 = (1, ModulationOrder.QPSK,     193/1024)
+    LEVEL_02 = (2, ModulationOrder.QPSK,     308/1024)
+    LEVEL_03 = (3, ModulationOrder.QPSK,     449/1024)
+    LEVEL_04 = (4, ModulationOrder.QPSK,     602/1024)
+    LEVEL_05 = (5, ModulationOrder.QAM_16,   378/1024)
+    LEVEL_06 = (6, ModulationOrder.QAM_16,   434/1024)
+    LEVEL_07 = (7, ModulationOrder.QAM_16,   490/1024)
+    LEVEL_08 = (8, ModulationOrder.QAM_16,   553/1024)
+    LEVEL_09 = (9, ModulationOrder.QAM_16,   616/1024)
+    LEVEL_10 = (10,ModulationOrder.QAM_16,   658/1024)
+    LEVEL_11 = (11,ModulationOrder.QAM_64,   466/1024)
+    LEVEL_12 = (12,ModulationOrder.QAM_64,   517/1024)
+    LEVEL_13 = (13,ModulationOrder.QAM_64,   567/1024)
+    LEVEL_14 = (14,ModulationOrder.QAM_64,   616/1024)
+    LEVEL_15 = (15,ModulationOrder.QAM_64,   666/1024)
+    LEVEL_16 = (16,ModulationOrder.QAM_64,   719/1024)
+    LEVEL_17 = (17,ModulationOrder.QAM_64,   772/1024)
+    LEVEL_18 = (18,ModulationOrder.QAM_64,   822/1024)
+    LEVEL_19 = (19,ModulationOrder.QAM_64,   873/1024)
+    LEVEL_20 = (20,ModulationOrder.QAM_256,682.5/1024)
+    LEVEL_21 = (21,ModulationOrder.QAM_256,  711/1024)
+    LEVEL_22 = (22,ModulationOrder.QAM_256,  754/1024)
+    LEVEL_23 = (23,ModulationOrder.QAM_256,  797/1024)
+    LEVEL_24 = (24,ModulationOrder.QAM_256,  841/1024)
+    LEVEL_25 = (25,ModulationOrder.QAM_256,  885/1024)
+    LEVEL_26 = (26,ModulationOrder.QAM_256,916.5/1024)
+    LEVEL_27 = (27,ModulationOrder.QAM_256,  948/1024)
 
 def getStringIndexLevel(DedicatedTable):
     if DedicatedTable is NR_Table.CQI_TABLE_2: return [Level.name for Level in NrParameterForCqiTable2]
@@ -147,8 +147,8 @@ def getCurveParameterForMcsTable1():
                       [-2.4033, 0.3888, math.log2(ModulationOrder.QPSK.value  ) * NrParameterForMcsTable1.LEVEL_05.value[IndexName.CODE_RATE.value]],  
                       [-1.7048, 0.3381, math.log2(ModulationOrder.QPSK.value  ) * NrParameterForMcsTable1.LEVEL_06.value[IndexName.CODE_RATE.value]],  
                       [-0.8264, 0.3169, math.log2(ModulationOrder.QPSK.value  ) * NrParameterForMcsTable1.LEVEL_07.value[IndexName.CODE_RATE.value]],  
-                      [-0.1311, 0.2991, math.log2(ModulationOrder.QAM_16.value) * NrParameterForMcsTable1.LEVEL_08.value[IndexName.CODE_RATE.value]],  
-                      [ 0.7615, 0.2834, math.log2(ModulationOrder.QAM_16.value) * NrParameterForMcsTable1.LEVEL_09.value[IndexName.CODE_RATE.value]],  
+                      [-0.1311, 0.2991, math.log2(ModulationOrder.QPSK.value  ) * NrParameterForMcsTable1.LEVEL_08.value[IndexName.CODE_RATE.value]],  
+                      [ 0.7615, 0.2834, math.log2(ModulationOrder.QPSK.value  ) * NrParameterForMcsTable1.LEVEL_09.value[IndexName.CODE_RATE.value]],  
                       [ 1.4570, 0.2554, math.log2(ModulationOrder.QAM_16.value) * NrParameterForMcsTable1.LEVEL_10.value[IndexName.CODE_RATE.value]],  
                       [ 2.1853, 0.2702, math.log2(ModulationOrder.QAM_16.value) * NrParameterForMcsTable1.LEVEL_11.value[IndexName.CODE_RATE.value]],  
                       [ 2.8850, 0.2522, math.log2(ModulationOrder.QAM_16.value) * NrParameterForMcsTable1.LEVEL_12.value[IndexName.CODE_RATE.value]],  
@@ -174,8 +174,8 @@ def getCurveParameterForMcsTable2():
     curve = np.array(([-7.8269, 0.5938, math.log2(ModulationOrder.QPSK.value   ) * NrParameterForMcsTable2.LEVEL_00.value[IndexName.CODE_RATE.value]],
                       [-5.7977, 0.4928, math.log2(ModulationOrder.QPSK.value   ) * NrParameterForMcsTable2.LEVEL_01.value[IndexName.CODE_RATE.value]],
                       [-3.6457, 0.3797, math.log2(ModulationOrder.QPSK.value   ) * NrParameterForMcsTable2.LEVEL_02.value[IndexName.CODE_RATE.value]],
-                      [-1.7048, 0.3380, math.log2(ModulationOrder.QAM_16.value ) * NrParameterForMcsTable2.LEVEL_03.value[IndexName.CODE_RATE.value]],
-                      [-0.1310, 0.2990, math.log2(ModulationOrder.QAM_16.value ) * NrParameterForMcsTable2.LEVEL_04.value[IndexName.CODE_RATE.value]],
+                      [-1.7048, 0.3380, math.log2(ModulationOrder.QPSK.value   ) * NrParameterForMcsTable2.LEVEL_03.value[IndexName.CODE_RATE.value]],
+                      [-0.1310, 0.2990, math.log2(ModulationOrder.QPSK.value   ) * NrParameterForMcsTable2.LEVEL_04.value[IndexName.CODE_RATE.value]],
                       [ 2.1853, 0.2702, math.log2(ModulationOrder.QAM_16.value ) * NrParameterForMcsTable2.LEVEL_05.value[IndexName.CODE_RATE.value]],
                       [ 2.8850, 0.2522, math.log2(ModulationOrder.QAM_16.value ) * NrParameterForMcsTable2.LEVEL_06.value[IndexName.CODE_RATE.value]],
                       [ 3.6101, 0.2457, math.log2(ModulationOrder.QAM_16.value ) * NrParameterForMcsTable2.LEVEL_07.value[IndexName.CODE_RATE.value]],

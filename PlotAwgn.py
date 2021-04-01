@@ -15,20 +15,28 @@ import numpy as np
 import math
 
 class PlotType(Enum):
+    '''
+    This class is used to provide axis labels 
+    '''
     BLER       = "Block Error Rate"
     EFFICIENCY = "Spectral efficiency in [bit's/Hz]"
     SNR        = "SNR[dB]"
 class AxisIndex(Enum):
+    '''
+
+    '''
     X_VECTOR = 0
     Y_VECTOR = 1
 class StyleParameter():
-
+    '''
+    This class is used for the standard parameterization of the method Plot Function. 
+    '''
     def __init__(self):
         self.SnrStart        = -10
         self.SnrEnd          = 20 
         self.SnrResolution   = 0.1
         self.FigSave         = True
-        self.CsvSave         = True
+        self.CsvSave         = False
         self.MinorGrid       = True
         self.MajaorGrid      = True
         self.LineStyle       = 'solid'
@@ -42,7 +50,7 @@ class StyleParameter():
         self.FigTitle        = 'generic'     
         self.FigSaveTitle    = 'generic'  
 
-def MyPlotFunction(DataX, DataY, *args, **kwargs):
+def MyPlotFunction(DataX, DataY, *args):
 
     if len(args) > 2 and isinstance(args[2], NR_Table):
         PlotData = DataX, DataY
@@ -53,7 +61,9 @@ def MyPlotFunction(DataX, DataY, *args, **kwargs):
     else:
         styleParameter = getStyleParameter(args)
         PlotData = np.matlib.repmat(DataX, 1, 1), np.matlib.repmat(DataY, 1, 1)
-        styleParameter.Label = np.linspace(1, len(PlotData[0]), len(PlotData[0]))
+        print(len(PlotData[AxisIndex.X_VECTOR.value]))
+        styleParameter.Label = str((np.linspace(1, len(PlotData[AxisIndex.Y_VECTOR.value]), 
+        len(PlotData[AxisIndex.Y_VECTOR.value])))) if len(styleParameter.Label) == 0 else styleParameter.Label
 
     Height, Width, Dpi = GetFigureSize(len(PlotData[AxisIndex.Y_VECTOR.value]) > 20)
     
@@ -77,6 +87,7 @@ def MyPlotFunction(DataX, DataY, *args, **kwargs):
 
     if styleParameter.FigSave: plt.savefig(styleParameter.FigSaveTitle, bbox_inches = 'tight')
     plt.show()
+    styleParameter.Label = []
 
 def LabelStringForPlotFunction(styleParameter ,LevelVector, DedicatedTable):
     for LevelIndex in LevelVector:
@@ -222,6 +233,17 @@ FigOption1.LineStyle = 'solid'
 FigOption1.CsvSave   = True
 FigOption1.FigSave   = True
 
-PlotEfficiencyforCqiTable2(np.linspace(1,4,15), np.linspace(-10,20,100))
-PlotEfficiencyforMcsTable1(np.linspace(0,28,29),[])
-MyPlotFunction([0, 1, 2, 3],[0, 1, 2, 3])
+PlotBlerforCqiTable2(np.linspace(1,15,15), np.linspace(-10,20,100))
+PlotEfficiencyforCqiTable2(np.linspace(1,15,15), np.linspace(-10,20,100))
+PlotBlerforMcsTable1(np.linspace(0,28,29), np.linspace(-10,20,100))
+PlotEfficiencyforMcsTable1(np.linspace(0,28,29), np.linspace(-10,20,100))
+PlotBlerforMcsTable2(np.linspace(0,27,28), np.linspace(-10,20,100))
+PlotEfficiencyforMcsTable2(np.linspace(0,27,28), np.linspace(-10,20,100))
+
+
+FigOption2 = StyleParameter()
+FigOption2.Label = ['Test_1', 'Test_2']
+
+A = [[1,2,3,4],[1,2,3,4]]
+B = [[1,2,3,4],[1,2,3,4]]
+MyPlotFunction(A, B, FigOption2)
