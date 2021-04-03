@@ -56,52 +56,106 @@ def MyPlotFunction(DataX, DataY, *args):
     In addition, a style parameter object can be transferred, e.g. to insert axis labels.
     When the implemented NR tables and the associated level indexes are transferred, 
     the style parameters are generated automatically 
+
+    Parameter
+    ---------
+    DataX: float or int
+
+        Pass Vector or Matrix of your dedicated x-axis vector or matrix
+    DataY: float or int
+
+        Pass Vector or Matrix of your dedicated y-axis vector or matrix
+    args* = {exact description in PlotBlerCqiB etc.}
+
+        All optionally passed arguments are used exclusively for displaying BLER 
+        and Efficiency Awgn curves of nr_tables
     '''
     if len(args) > 2 and isinstance(args[2], NR_Table):
+        # Will only be executed for nr_tables
         PlotData = DataX, DataY
         styleParameter, LevelVector, DedicatedTable, DedicatedPlotType = args 
-        LabelStringForPlotFunction(styleParameter, LevelVector, DedicatedTable)
-        CsvCreator(styleParameter, LevelVector, PlotData, DedicatedTable, DedicatedPlotType)
+        getPlotLabelsForDedicatedTable(styleParameter, LevelVector, DedicatedTable)
+        getCsvFile(styleParameter, LevelVector, PlotData, DedicatedTable, DedicatedPlotType)
         AxisScaleAndTitleCreator(styleParameter, PlotData, DedicatedPlotType, DedicatedTable)
     else:
+        # Is used for standard representations
         styleParameter = getStyleParameter(args)
         PlotData = np.matlib.repmat(DataX, 1, 1), np.matlib.repmat(DataY, 1, 1)
         print(len(PlotData[AxisIndex.X_VECTOR.value]))
         styleParameter.Label = str((np.linspace(1, len(PlotData[AxisIndex.Y_VECTOR.value]), 
         len(PlotData[AxisIndex.Y_VECTOR.value])))) if len(styleParameter.Label) == 0 else styleParameter.Label
-
-    Height, Width, Dpi = GetFigureSize(len(PlotData[AxisIndex.Y_VECTOR.value]) > 20)
     
+    Height, Width, Dpi = GetFigureSize(len(PlotData[AxisIndex.Y_VECTOR.value]) > 20)
+    # Will be used to scale labels and set grid styles
     plt.figure(figsize = (Height, Width), dpi = Dpi)    
     plt.grid(b = True, which = 'major', color = '#666666', linestyle = '-') if styleParameter.MajaorGrid else None
-    plt.minorticks_on(), plt.grid(b=True,which='minor',color='#999999',linestyle='-',alpha=0.2) if styleParameter.MinorGrid else None 
-    
+    plt.minorticks_on(), plt.grid(b=Tr
+    ,which='minor',color='#999999',linestyle='-',alpha=0.2) if styleParameter.MinorGrid else None 
+    # Used to arange plotdata 
     for LevelIndex in range(len(PlotData[AxisIndex.X_VECTOR.value])):
         plt.plot(PlotData[AxisIndex.X_VECTOR.value][LevelIndex], 
         PlotData[AxisIndex.Y_VECTOR.value][LevelIndex],
         label     = styleParameter.Label[LevelIndex], 
         linestyle = styleParameter.LineStyle,
         linewidth = styleParameter.LineWidth)
-    
+    # Set dedicated styleparameter for figure
     plt.title(styleParameter.FigTitle), plt.yscale(styleParameter.YScale), plt.ylim(styleParameter.Ylim)
     plt.ylabel(styleParameter.YLabel), plt.xlim(styleParameter.Xlim), plt.xlabel(styleParameter.Xlabel)     
     plt.legend(bbox_to_anchor=(1.04, 0.5), loc="center left", fancybox=True)
     plt.subplots_adjust(right=0.7)    
     fig = plt.gcf()
     fig.set_size_inches(17, 8)
-
+    # Save is located in EXECUTED DIRECTORY
     if styleParameter.FigSave: plt.savefig(styleParameter.FigSaveTitle, bbox_inches = 'tight')
     plt.show()
     styleParameter.Label = []
 
-def LabelStringForPlotFunction(styleParameter ,LevelVector, DedicatedTable):
+def getPlotLabelsForDedicatedTable(styleParameter ,LevelVector, DedicatedTable):
+    '''
+    This method is used to create plot labels based on the selected levels from 
+    nr_table and the desired table  e.g. cqi_table2, mcs_table1, .....
+
+    Parameter
+    ---------
+    styleParameter: object
+
+        Is object of the styleParameter class
+    LevelVector: scalar or vector
+
+        Is index for dedicated table e.g. [0, 1, 2, 3,]
+    DedicatedTable: class
+
+        Is Enum class to verifiy which table is dedicated e.g NR_Table.CQI_TABLE_2 
+    '''
     for LevelIndex in LevelVector:
         styleParameter.Label = np.append(styleParameter.Label, r"{} - {} - $R = {:.2f}$".
         format(getStringIndexLevel(DedicatedTable)[LevelIndex], 
                getStringModulationOrder(DedicatedTable)[LevelIndex],
                getCodeRate(DedicatedTable)[LevelIndex]))
 
-def CsvCreator(styleParameter, LevelVector, PlotData, DedicatedTable, DedicatedPlotType):
+def getCsvFile(styleParameter, LevelVector, PlotData, DedicatedTable, DedicatedPlotType):
+    '''
+    This method is used to save Figure data in a Csv file. 
+
+    Parameter
+    ---------
+    styleParameter: object
+
+        Is object of the styleParameter class
+    LevelVector: scalar or vector
+
+        Is index for dedicated table e.g. [0, 1, 2, 3,]
+    PlotData: matrix
+
+        Is a matrix and contains x-axis and y-axis values for dedicated plot
+    DedicatedTable: class
+
+        Is Enum class to verify which table is dedicated e.g NR_Table.CQI_TABLE_2 
+    DedicatedPlotType: class
+
+        Is Enum class to verify which Type is dedicated e.g PlotType.BLER or 
+        PlotType.EFFICIENCY
+    '''
     if styleParameter.CsvSave:
         for (LevelIndex, CurveIndex) in zip(LevelVector ,range(len(PlotData[AxisIndex.Y_VECTOR.value]))):
             CsvHeader = r"SnrInDezibel;{};".format(DedicatedPlotType.name)
@@ -109,7 +163,6 @@ def CsvCreator(styleParameter, LevelVector, PlotData, DedicatedTable, DedicatedP
             DedicatedPlotType.name, getStringIndexLevel(DedicatedTable)[LevelIndex]))
             CsvFile = open(CsvTitle+".csv","w")
             CsvFile.write(CsvHeader+"\n")
-
             for DataIndex in range(len(PlotData[AxisIndex.X_VECTOR.value][CurveIndex])):
                 CsvData = r"{:f};{:f}".format(PlotData[AxisIndex.X_VECTOR.value][CurveIndex][DataIndex],
                 PlotData[AxisIndex.Y_VECTOR.value][CurveIndex][DataIndex])    
@@ -117,18 +170,49 @@ def CsvCreator(styleParameter, LevelVector, PlotData, DedicatedTable, DedicatedP
             CsvFile.close()
                 
 def AxisScaleAndTitleCreator(styleParameter ,PlotData, DedicatedPlotType, DedicatedTable):
+    '''
+    This method is used to create the axis labeling, axis scaling and the figure title 
+    
+    Parameter
+    ---------
+    styleParameter: object
+
+        Is object of the styleParameter class
+
+    PlotData: matrix
+
+        Is a matrix and contains x-axis and y-axis values for dedicated plot
+
+    DedicatedTable: class
+
+        Is Enum class to verify which table is dedicated e.g NR_Table.CQI_TABLE_2 
+
+    DedicatedPlotType: class
+
+        Is Enum class to verify which Type is dedicated e.g PlotType.BLER or 
+        PlotType.EFFICIENCY
+    '''
     if DedicatedPlotType is PlotType.BLER:
         styleParameter.YLabel, styleParameter.Ylim, styleParameter.YScale = (r"{}".format(PlotType.BLER.name), (10e-6, 1), 'log')
     if DedicatedPlotType is PlotType.EFFICIENCY: 
         styleParameter.YLabel, styleParameter.Ylim, styleParameter.YScale = (r"{}".format(PlotType.EFFICIENCY.value), 
         (0, np.ceil(np.max(PlotData[AxisIndex.Y_VECTOR.value]))), 'linear')
-
     styleParameter.Xlabel = r"{}".format(PlotType.SNR.value)
     styleParameter.Xlim = (np.min(PlotData[AxisIndex.X_VECTOR.value]), np.max(PlotData[AxisIndex.X_VECTOR.value]))
     styleParameter.FigTitle = r"{}-{}".format(DedicatedTable.value, DedicatedPlotType.name)
     styleParameter.FigSaveTitle = str.lower(r"{}_{}".format(DedicatedTable.name, DedicatedPlotType.name))
 
 def GetFigureSize(IsManyCurves):
+    '''
+    This method defines the height, width and dpi
+
+    Parameter
+    ---------
+    IsMannyCurves: bool
+
+        If the number of plots displayed at the same time exceeds 20,
+        the figure will be resized
+    '''
     Dpi = 96
     Height = 600 / Dpi
     Width = 1100 / Dpi
@@ -137,6 +221,16 @@ def GetFigureSize(IsManyCurves):
     return Width, Height, Dpi
 
 def getStyleParameter(DedicatedStyle):
+    '''
+    This method is used to create an object of the StyleParameter class 
+    if it was not passed before.
+
+    Parameter
+    ---------
+    DedicatedStyle: object
+        overridden object of the style parameter class. Contains 
+        styleParameters for the desired plot
+    '''
     if len(DedicatedStyle) > 0:
         if isinstance(DedicatedStyle[0], StyleParameter):
             styleParameter = DedicatedStyle[0]
@@ -144,42 +238,112 @@ def getStyleParameter(DedicatedStyle):
     return styleParameter
 
 def PlotBlerforCqiTable2(LevelIndex, SnrVectorOrScalar, *args):
+    '''
+    This method is used to generate a plot of the block error rate in the range of the desired SNR's 
+    for NR table Cqi2
+
+    Parameter
+    ---------
+    LevelIndex: scalar or vector
+
+        Is index for dedicated table e.g. [0, 1, 2, 3,] or np.linspace(0,3,4)
+    SnrVectorOrScalar: scalar or vector
+
+        If a scalar is passed, it is used as the end value of the Snr vector. 
+        For more information see SnrVectorCreator
+    args: StyleParameter object
+
+        see method getStyleParameter
+
+    '''
     styleParameter = getStyleParameter(args)
     LevelVector, SnrVector = CreateValidDataForPlot(styleParameter, LevelIndex, SnrVectorOrScalar, NR_Table.CQI_TABLE_2)
     DataX, DataY = CalculateBler(LevelVector, SnrVector, getCurveParameterForCqiTable2())
     MyPlotFunction(DataX, DataY, styleParameter, LevelVector ,NR_Table.CQI_TABLE_2, PlotType.BLER)
 
 def PlotBlerforMcsTable1(LevelIndex, SnrVectorOrScalar, *args):
+    '''
+    This method is used to generate a BLER plot in the range of the desired SNR's for dedicated levels in
+    NR table MCS1
+    
+    Parameter
+    ---------
+    See description PlotBlerForCqiTable2
+    '''
     styleParameter = getStyleParameter(args)
     LevelVector, SnrVector = CreateValidDataForPlot(styleParameter, LevelIndex, SnrVectorOrScalar, NR_Table.MCS_TABLE_1)
     DataX, DataY = CalculateBler(LevelVector, SnrVector, getCurveParameterForMcsTable1())
     MyPlotFunction(DataX, DataY, styleParameter, LevelVector ,NR_Table.MCS_TABLE_1, PlotType.BLER)
 
 def PlotBlerforMcsTable2(LevelIndex, SnrVectorOrScalar, *args):
+    '''
+    This method is used to generate a BLER plot in the range of the desired SNR's for dedicated levels in
+    NR table MCS2
+
+    Parameter
+    ---------
+    See description PlotBlerForCqiTable2
+    '''
     styleParameter = getStyleParameter(args)
     LevelVector, SnrVector = CreateValidDataForPlot(styleParameter, LevelIndex, SnrVectorOrScalar, NR_Table.MCS_TABLE_2)
     DataX, DataY = CalculateBler(LevelVector, SnrVector, getCurveParameterForMcsTable2())
     MyPlotFunction(DataX, DataY, styleParameter, LevelVector ,NR_Table.MCS_TABLE_2, PlotType.BLER)
 
 def PlotEfficiencyforCqiTable2(LevelIndex, SnrVectorOrScalar, *args):
+    '''
+    This method is used to generate a efficiency plot in the range of the desired SNR's for dedicated levels in
+    NR table CQI2
+
+    Parameter
+    ---------
+    See description PlotBlerForCqiTable2
+    '''
     styleParameter = getStyleParameter(args)
     LevelVector, SnrVector = CreateValidDataForPlot(styleParameter, LevelIndex, SnrVectorOrScalar, NR_Table.CQI_TABLE_2)
     DataX, DataY = CalculateEfficiency(LevelVector, SnrVector, getCurveParameterForCqiTable2())
     MyPlotFunction(DataX, DataY, styleParameter, LevelVector ,NR_Table.CQI_TABLE_2, PlotType.EFFICIENCY)
 
 def PlotEfficiencyforMcsTable1(LevelIndex, SnrVectorOrScalar, *args):   
+    '''
+    This method is used to generate a efficiency plot in the range of the desired SNR's for dedicated levels in
+    NR table MCS1
+
+    Parameter
+    ---------
+    See description PlotBlerForCqiTable2
+    '''
     styleParameter = getStyleParameter(args) 
     LevelVector, SnrVector = CreateValidDataForPlot(styleParameter, LevelIndex, SnrVectorOrScalar, NR_Table.MCS_TABLE_1)
     DataX, DataY = CalculateEfficiency(LevelVector, SnrVector, getCurveParameterForMcsTable1())
     MyPlotFunction(DataX, DataY, styleParameter, LevelVector ,NR_Table.MCS_TABLE_1, PlotType.EFFICIENCY)
 
 def PlotEfficiencyforMcsTable2(LevelIndex, SnrVectorOrScalar, *args):
+    '''
+    This method is used to generate a efficiency plot in the range of the desired SNR's for dedicated levels in 
+    NR table MCS2
+
+    Parameter
+    ---------
+    See description PlotBlerForCqiTable2
+    '''
     styleParameter = getStyleParameter(args) 
     LevelVector, SnrVector = CreateValidDataForPlot(styleParameter, LevelIndex, SnrVectorOrScalar, NR_Table.MCS_TABLE_2)
     DataX, DataY = CalculateEfficiency(LevelVector, SnrVector, getCurveParameterForMcsTable2())
     MyPlotFunction(DataX, DataY, styleParameter, LevelVector ,NR_Table.MCS_TABLE_2, PlotType.EFFICIENCY)
 
 def CalculateEfficiency(LevelVector, SnrVector, CurveParameter):
+    '''
+    This method is used to calculate the efficiency of the NR tables. 
+
+    Parameter
+    ---------
+    LevelVector: int
+
+        Is a vector with the desired levels of the used NR table
+    SnrVector: float 
+
+        Is a vector with the disired SNR values for efficiency calculation 
+    '''
     SnrFactor, CodeRate, MaximumRate = [], [], []
     for LevelIndex in LevelVector:
         SnrFactor = np.append(SnrFactor, CurveParameter[LevelIndex, 0])
@@ -190,6 +354,18 @@ def CalculateEfficiency(LevelVector, SnrVector, CurveParameter):
     return DataX, DataY 
 
 def CalculateBler(LevelVector, SnrVector, CurveParameter):
+    '''
+    This method is used to calculate the BLER of the NR tables. 
+
+    Parameter
+    ---------
+    LevelVector: int
+
+        Is a vector with the desired levels of the used NR table
+    SnrVector: float 
+
+        Is a vector with the disired SNR values for BLER calculation 
+    '''
     SnrFactor, CodeRate, MaximumRate = [], [], []
     for LevelIndex in LevelVector:
         SnrFactor = np.append(SnrFactor, CurveParameter[LevelIndex, 0])
@@ -200,6 +376,13 @@ def CalculateBler(LevelVector, SnrVector, CurveParameter):
     return DataX, DataY
 
 def CreateValidDataForPlot(styleParameter, LevelIndex, SnrVectorOrScalar, DedicatedTable):
+    '''
+    This method checks if the passed levels and SNR values are correct 
+
+    styleParameter: object
+
+        Is object of the styleParameter class
+    '''
     MinIndice, MaxIndice = getMinAndMaxLevelIndices(DedicatedTable)
     LevelVector, MinLevel, MaxLevel = LevelVectorCreator(LevelIndex, DedicatedTable)
     if MinLevel < MinIndice or MaxLevel > MaxIndice: raise NotImplementedError("Data not found")
