@@ -114,18 +114,42 @@ class NrParameterForMcsTable2(Enum):
 
 def getStringIndexLevel(DedicatedTable):
     '''
-    This 
+    This method returns the level name in string format for the desired table
+
+    Parameter
+    ---------
+    DedicatedTable: class
+
+        Is Enum class to verify which table is dedicated e.g NR_Table.CQI_TABLE_2
     '''
     if DedicatedTable is NR_Table.CQI_TABLE_2: return [Level.name for Level in NrParameterForCqiTable2]
     if DedicatedTable is NR_Table.MCS_TABLE_1: return [Level.name for Level in NrParameterForMcsTable1]
     if DedicatedTable is NR_Table.MCS_TABLE_2: return [Level.name for Level in NrParameterForMcsTable2]
 
 def getCodeRate(DedicatedTable):
+    '''
+    This method returns the codeRate as float value for the desired table
+
+    Parameter
+    ---------
+    DedicatedTable: class
+
+        Is Enum class to verify which table is dedicated e.g NR_Table.CQI_TABLE_2
+    '''
     if DedicatedTable is NR_Table.CQI_TABLE_2: return [CodeRate.value[IndexName.CODE_RATE.value] for CodeRate in NrParameterForCqiTable2]
     if DedicatedTable is NR_Table.MCS_TABLE_1: return [CodeRate.value[IndexName.CODE_RATE.value] for CodeRate in NrParameterForMcsTable1]
     if DedicatedTable is NR_Table.MCS_TABLE_2: return [CodeRate.value[IndexName.CODE_RATE.value] for CodeRate in NrParameterForMcsTable2]
 
 def getStringModulationOrder(DedicatedTable):
+    '''
+    This method returns the modulation order in string format for the desired table
+
+    Parameter
+    ---------
+    DedicatedTable: class
+
+        Is Enum class to verify which table is dedicated e.g NR_Table.CQI_TABLE_2
+    '''
     if  DedicatedTable is NR_Table.CQI_TABLE_2:
         Parameter =  [Parameter.value[IndexName.MODULATION_ORDER.value] for Parameter in NrParameterForCqiTable2]
         return [Modulation.name for Modulation in Parameter]
@@ -137,11 +161,23 @@ def getStringModulationOrder(DedicatedTable):
         return [Modulation.name for Modulation in Parameter]
 
 def getMinAndMaxLevelIndices(DedicatedTable):
+    '''
+    This method returns the min und max value to check whether the requested levels are available 
+
+    Parameter
+    ---------
+    DedicatedTable: class
+
+        Is Enum class to verify which table is dedicated e.g NR_Table.CQI_TABLE_2
+    '''
     if DedicatedTable is NR_Table.CQI_TABLE_2: return [NrParameterForCqiTable2.LEVEL_01.value[IndexName.LEVEL_INDEX.value], NrParameterForCqiTable2.LEVEL_15.value[IndexName.LEVEL_INDEX.value]] 
     if DedicatedTable is NR_Table.MCS_TABLE_1: return [NrParameterForMcsTable1.LEVEL_00.value[IndexName.LEVEL_INDEX.value], NrParameterForMcsTable1.LEVEL_28.value[IndexName.LEVEL_INDEX.value]]
     if DedicatedTable is NR_Table.MCS_TABLE_2: return [NrParameterForMcsTable2.LEVEL_00.value[IndexName.LEVEL_INDEX.value], NrParameterForMcsTable2.LEVEL_27.value[IndexName.LEVEL_INDEX.value]]
 
 def getCurveParameterForCqiTable2():
+    '''
+    This method returns curve paramter for CQI2 
+    '''
     curve = np.array(([-7.8269, 0.5938, math.log2(ModulationOrder.QPSK.value   ) * NrParameterForCqiTable2.LEVEL_01.value[IndexName.CODE_RATE.value]],    
                       [-6.5395, 0.5280, math.log2(ModulationOrder.QPSK.value   ) * NrParameterForCqiTable2.LEVEL_02.value[IndexName.CODE_RATE.value]],  
                       [-5.7642, 0.4753, math.log2(ModulationOrder.QPSK.value   ) * NrParameterForCqiTable2.LEVEL_03.value[IndexName.CODE_RATE.value]],  
@@ -160,6 +196,9 @@ def getCurveParameterForCqiTable2():
     return curve
     
 def getCurveParameterForMcsTable1():
+    '''
+    This method returns curve paramter for MCS1
+    '''
     curve = np.array(([-7.8269, 0.5938, math.log2(ModulationOrder.QPSK.value  ) * NrParameterForMcsTable1.LEVEL_00.value[IndexName.CODE_RATE.value]],  
                       [-6.5395, 0.5280, math.log2(ModulationOrder.QPSK.value  ) * NrParameterForMcsTable1.LEVEL_01.value[IndexName.CODE_RATE.value]],  
                       [-5.7642, 0.4753, math.log2(ModulationOrder.QPSK.value  ) * NrParameterForMcsTable1.LEVEL_02.value[IndexName.CODE_RATE.value]],  
@@ -192,6 +231,9 @@ def getCurveParameterForMcsTable1():
     return curve
 
 def getCurveParameterForMcsTable2():
+    '''
+    This method returns curve paramter for MCS2
+    '''
     curve = np.array(([-7.8269, 0.5938, math.log2(ModulationOrder.QPSK.value   ) * NrParameterForMcsTable2.LEVEL_00.value[IndexName.CODE_RATE.value]],
                       [-5.7977, 0.4928, math.log2(ModulationOrder.QPSK.value   ) * NrParameterForMcsTable2.LEVEL_01.value[IndexName.CODE_RATE.value]],
                       [-3.6457, 0.3797, math.log2(ModulationOrder.QPSK.value   ) * NrParameterForMcsTable2.LEVEL_02.value[IndexName.CODE_RATE.value]],
