@@ -3,19 +3,31 @@ import numpy.matlib as np
 from enum import Enum, auto, IntEnum
 import math
 class NR_Table(Enum):
+    '''
+    This class is used to select readable NR table index
+    '''
     CQI_TABLE_2 = "Cqi-Table2"
     MCS_TABLE_1 = "Mcs-Table1"
     MCS_TABLE_2 = "Mcs-Table2"
 class ModulationOrder(Enum):
+    '''
+    This class is used to select readable modulation order
+    '''
     QPSK    = 4
     QAM_16  = 16
     QAM_64  = 64
     QAM_256 = 256  
 class IndexName(Enum):
+    '''
+    This class is used to assign readable index
+    '''
     LEVEL_INDEX      = 0
     MODULATION_ORDER = 1
     CODE_RATE        = 2
 class NrParameterForCqiTable2(Enum):
+    '''
+    This class is used to store NR Parameter for CQI2
+    '''
    #LEVEL-----Index---Modulationorder-------Coderate
     LEVEL_01 = (1, ModulationOrder.QPSK,    78/1024) 
     LEVEL_02 = (2, ModulationOrder.QPSK,   193/1024)
@@ -33,6 +45,9 @@ class NrParameterForCqiTable2(Enum):
     LEVEL_14 = (14,ModulationOrder.QAM_256,797/1024)
     LEVEL_15 = (15,ModulationOrder.QAM_256,948/1024)
 class NrParameterForMcsTable1(Enum): 
+    '''
+    This class is used to store NR Parameter for MCS1
+    '''
    #LEVEL-----Index---Modulationorder------Coderate
     LEVEL_00 = (0, ModulationOrder.QPSK,  120/1024)
     LEVEL_01 = (1, ModulationOrder.QPSK,  157/1024)
@@ -64,6 +79,9 @@ class NrParameterForMcsTable1(Enum):
     LEVEL_27 = (27,ModulationOrder.QAM_64,910/1024)
     LEVEL_28 = (28,ModulationOrder.QAM_64,948/1024)
 class NrParameterForMcsTable2(Enum):
+    '''
+    This class is used to store NR Parameter for MCS1
+    '''
    #LEVEL-----Index---Modulationorder-------Coderate
     LEVEL_00 = (0, ModulationOrder.QPSK,     120/1024)
     LEVEL_01 = (1, ModulationOrder.QPSK,     193/1024)
@@ -95,6 +113,9 @@ class NrParameterForMcsTable2(Enum):
     LEVEL_27 = (27,ModulationOrder.QAM_256,  948/1024)
 
 def getStringIndexLevel(DedicatedTable):
+    '''
+    This 
+    '''
     if DedicatedTable is NR_Table.CQI_TABLE_2: return [Level.name for Level in NrParameterForCqiTable2]
     if DedicatedTable is NR_Table.MCS_TABLE_1: return [Level.name for Level in NrParameterForMcsTable1]
     if DedicatedTable is NR_Table.MCS_TABLE_2: return [Level.name for Level in NrParameterForMcsTable2]

@@ -71,7 +71,7 @@ def MyPlotFunction(DataX, DataY, *args):
         and Efficiency Awgn curves of nr_tables
     '''
     if len(args) > 2 and isinstance(args[2], NR_Table):
-        # Will only be executed for nr_tables
+        # Will only be executed for NR_Tables
         PlotData = DataX, DataY
         styleParameter, LevelVector, DedicatedTable, DedicatedPlotType = args 
         getPlotLabelsForDedicatedTable(styleParameter, LevelVector, DedicatedTable)
@@ -89,8 +89,7 @@ def MyPlotFunction(DataX, DataY, *args):
     # Will be used to scale labels and set grid styles
     plt.figure(figsize = (Height, Width), dpi = Dpi)    
     plt.grid(b = True, which = 'major', color = '#666666', linestyle = '-') if styleParameter.MajaorGrid else None
-    plt.minorticks_on(), plt.grid(b=Tr
-    ,which='minor',color='#999999',linestyle='-',alpha=0.2) if styleParameter.MinorGrid else None 
+    plt.minorticks_on(), plt.grid(b=True,which='minor',color='#999999',linestyle='-',alpha=0.2) if styleParameter.MinorGrid else None 
     # Used to arange plotdata 
     for LevelIndex in range(len(PlotData[AxisIndex.X_VECTOR.value])):
         plt.plot(PlotData[AxisIndex.X_VECTOR.value][LevelIndex], 
@@ -120,7 +119,7 @@ def getPlotLabelsForDedicatedTable(styleParameter ,LevelVector, DedicatedTable):
     styleParameter: object
 
         Is object of the styleParameter class
-    LevelVector: scalar or vector
+    LevelVector: float or int
 
         Is index for dedicated table e.g. [0, 1, 2, 3,]
     DedicatedTable: class
@@ -145,7 +144,7 @@ def getCsvFile(styleParameter, LevelVector, PlotData, DedicatedTable, DedicatedP
     LevelVector: scalar or vector
 
         Is index for dedicated table e.g. [0, 1, 2, 3,]
-    PlotData: matrix
+    PlotData: float matrix
 
         Is a matrix and contains x-axis and y-axis values for dedicated plot
     DedicatedTable: class
@@ -178,15 +177,12 @@ def AxisScaleAndTitleCreator(styleParameter ,PlotData, DedicatedPlotType, Dedica
     styleParameter: object
 
         Is object of the styleParameter class
-
-    PlotData: matrix
+    PlotData: float matrix 
 
         Is a matrix and contains x-axis and y-axis values for dedicated plot
-
     DedicatedTable: class
 
         Is Enum class to verify which table is dedicated e.g NR_Table.CQI_TABLE_2 
-
     DedicatedPlotType: class
 
         Is Enum class to verify which Type is dedicated e.g PlotType.BLER or 
@@ -244,16 +240,16 @@ def PlotBlerforCqiTable2(LevelIndex, SnrVectorOrScalar, *args):
 
     Parameter
     ---------
-    LevelIndex: scalar or vector
+    LevelIndex: int
 
-        Is index for dedicated table e.g. [0, 1, 2, 3,] or np.linspace(0,3,4)
-    SnrVectorOrScalar: scalar or vector
+        Is index for dedicated table e.g. 0 or np.linspace(0,3,4)
+    SnrVectorOrScalar: float or int
 
         If a scalar is passed, it is used as the end value of the Snr vector. 
         For more information see SnrVectorCreator
     args: StyleParameter object
 
-        see method getStyleParameter
+        see description getStyleParameter
 
     '''
     styleParameter = getStyleParameter(args)
@@ -340,7 +336,7 @@ def CalculateEfficiency(LevelVector, SnrVector, CurveParameter):
     LevelVector: int
 
         Is a vector with the desired levels of the used NR table
-    SnrVector: float 
+    SnrVector: float or int
 
         Is a vector with the disired SNR values for efficiency calculation 
     '''
@@ -362,7 +358,7 @@ def CalculateBler(LevelVector, SnrVector, CurveParameter):
     LevelVector: int
 
         Is a vector with the desired levels of the used NR table
-    SnrVector: float 
+    SnrVector: float or int
 
         Is a vector with the disired SNR values for BLER calculation 
     '''
@@ -377,11 +373,20 @@ def CalculateBler(LevelVector, SnrVector, CurveParameter):
 
 def CreateValidDataForPlot(styleParameter, LevelIndex, SnrVectorOrScalar, DedicatedTable):
     '''
-    This method checks if the passed levels and SNR values are correct 
+    This method checks if the passed levels and SNR values are correct to create plotdata
 
     styleParameter: object
 
         Is object of the styleParameter class
+    LevelVector: int
+
+        Is a vector with the desired levels of the used NR table
+    SnrVector: float or int
+
+        Is a vector with the disired SNR values for BLER calculatio
+    DedicatedTable: class
+
+        Is Enum class to verify which table is dedicated e.g NR_Table.CQI_TABLE_2 
     '''
     MinIndice, MaxIndice = getMinAndMaxLevelIndices(DedicatedTable)
     LevelVector, MinLevel, MaxLevel = LevelVectorCreator(LevelIndex, DedicatedTable)
@@ -390,6 +395,20 @@ def CreateValidDataForPlot(styleParameter, LevelIndex, SnrVectorOrScalar, Dedica
     return LevelVector, SnrVector
 
 def SnrVectorCreator(styleParameter ,SnrVectorOrScalar):
+    '''
+    This method generates an SNR vector. If a scalar is passed, the vector is generated 
+    based on the styleParameter, the scalar serves as the end value. The SNR resolution is 
+    defined in the Styleparameter.
+
+    Parameter
+    ---------
+    styleParameter: object 
+
+        Is object of the styleParameter class
+    SnrVectorOrScalar: float or int
+
+        Is a scalar or vector for dedicated SNR values
+    '''
     if np.isscalar(SnrVectorOrScalar):
         SnrVector = np.linspace(styleParameter.SnrStart, SnrVectorOrScalar,
                     int(abs(styleParameter.SnrStart - SnrVectorOrScalar) /
@@ -403,16 +422,52 @@ def SnrVectorCreator(styleParameter ,SnrVectorOrScalar):
     return SnrVector
 
 def LevelVectorCreator(LevelIndex, DedicatedTable):
+    '''
+    This method creates an index vector. If a scalar is passed, it is also built up as an array 
+
+    Parameter 
+    ---------
+
+    LevelIndex: int
+
+        Is index for dedicated table e.g. 0 or np.linspace(0,3,4)
+    DedicatedTable: class
+
+        Is Enum class to verify which table is dedicated e.g NR_Table.CQI_TABLE_2
+    '''
     np.array(LevelIndex) if np.isscalar(LevelIndex) else LevelIndex
     LevelIndexMin,LevelIndexMax = np.min(LevelIndex), np.max(LevelIndex)
     if DedicatedTable is NR_Table.CQI_TABLE_2: LevelIndex = np.array(LevelIndex) - 1 
     return LevelIndex.astype(int), LevelIndexMin, LevelIndexMax
 
 def getBler(SnrInDecibel, CodeRateFactor, SnrFactor, MaximumRate):
+    '''
+    This method is used for fast BLER  calculation 
+
+    Parameters
+    ----------
+    SnrFactor : float or int
+
+    Vector or Scalar //if Scalar is passed calculates only dedicated value
+        CodeRateFactor : float or int
+
+    Vector or Scalar //if Scalar is passed calculates only dedicated value // has to be positive
+        MaximumRate : float or int
+
+        dictionary or empty //if Scalar is passed calculates only dedicated value // has to be larger then zero
+
+    '''
     ScaleSnr = [((SnrInDecibel)-SnrFactor[i])/ math.sqrt(2.0) / CodeRateFactor[i] for i in range(len(SnrFactor))]
     return [(0.5*(1-(scipy.special.erf(v)))) for v in ScaleSnr]
 
 def getEfficiency(SnrInDecibel, CodeRateFactor, SnrFactor, MaximumRate):
+    '''
+    This method is used for fast Efficiency calculation 
+
+    Parameters
+    ----------
+    see getBler
+    '''
     Bler = np.array(getBler(SnrInDecibel, CodeRateFactor, SnrFactor, MaximumRate))
     return [((1.0 - Bler[i]) * MaximumRate[i]) for i in range(len(MaximumRate))]
 
