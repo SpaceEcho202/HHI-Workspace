@@ -36,7 +36,7 @@ class StyleParameter():
         self.SnrEnd          = 20 
         self.SnrResolution   = 0.1
         self.FigSave         = True
-        self.CsvSave         = False
+        self.CsvSave         = True
         self.MinorGrid       = True
         self.MajaorGrid      = True
         self.LineStyle       = 'solid'
@@ -105,14 +105,14 @@ def MyPlotFunction(DataX, DataY, *args):
     fig = plt.gcf()
     fig.set_size_inches(17, 8)
     # Save is located in EXECUTED DIRECTORY
-    if styleParameter.FigSave: plt.savefig(styleParameter.FigSaveTitle, bbox_inches = 'tight')
+    if styleParameter.FigSave:plt.savefig(styleParameter.FigSaveTitle, bbox_inches = 'tight')
     plt.show()
     styleParameter.Label = []
 
 def getPlotLabelsForDedicatedTable(styleParameter ,LevelVector, DedicatedTable):
     '''
     This method is used to create plot labels based on the selected levels from 
-    nr_table and the desired table  e.g. cqi_table2, mcs_table1, .....
+    the desired NR table  e.g. cqi_table2, mcs_table1, .....
 
     Parameter
     ---------
@@ -121,7 +121,7 @@ def getPlotLabelsForDedicatedTable(styleParameter ,LevelVector, DedicatedTable):
         Is object of the styleParameter class
     LevelVector: float or int
 
-        Is index for dedicated table e.g. [0, 1, 2, 3,]
+        Is index for dedicated table e.g. []
     DedicatedTable: class
 
         Is Enum class to verifiy which table is dedicated e.g NR_Table.CQI_TABLE_2 
@@ -134,7 +134,7 @@ def getPlotLabelsForDedicatedTable(styleParameter ,LevelVector, DedicatedTable):
 
 def getCsvFile(styleParameter, LevelVector, PlotData, DedicatedTable, DedicatedPlotType):
     '''
-    This method is used to save Figure data in a Csv file. 
+    This method is used to save figure data in a csv file. 
 
     Parameter
     ---------
@@ -143,7 +143,7 @@ def getCsvFile(styleParameter, LevelVector, PlotData, DedicatedTable, DedicatedP
         Is object of the styleParameter class
     LevelVector: scalar or vector
 
-        Is index for dedicated table e.g. [0, 1, 2, 3,]
+        Is level index for dedicated table e.g. []
     PlotData: float matrix
 
         Is a matrix and contains x-axis and y-axis values for dedicated plot
@@ -219,7 +219,8 @@ def GetFigureSize(IsManyCurves):
 def getStyleParameter(DedicatedStyle):
     '''
     This method is used to create an object of the StyleParameter class 
-    if it was not passed before.
+    if it was not passed before. The standard parameters can be taken 
+    from the style parameter class 
 
     Parameter
     ---------
@@ -246,7 +247,7 @@ def PlotBlerforCqiTable2(LevelIndex, SnrVectorOrScalar, *args):
     SnrVectorOrScalar: float or int
 
         If a scalar is passed, it is used as the end value of the Snr vector. 
-        For more information see SnrVectorCreator
+        For more information see getSnrVector
     args: StyleParameter object
 
         see description getStyleParameter
@@ -373,7 +374,8 @@ def CalculateBler(LevelVector, SnrVector, CurveParameter):
 
 def CreateValidDataForPlot(styleParameter, LevelIndex, SnrVectorOrScalar, DedicatedTable):
     '''
-    This method checks if the passed levels and SNR values are correct to create plotdata
+    This method checks if the passed levels and SNR values are correct
+    to create plot data & labels 
 
     styleParameter: object
 
@@ -391,10 +393,10 @@ def CreateValidDataForPlot(styleParameter, LevelIndex, SnrVectorOrScalar, Dedica
     MinIndice, MaxIndice = getMinAndMaxLevelIndices(DedicatedTable)
     LevelVector, MinLevel, MaxLevel = LevelVectorCreator(LevelIndex, DedicatedTable)
     if MinLevel < MinIndice or MaxLevel > MaxIndice: raise NotImplementedError("Data not found")
-    SnrVector = SnrVectorCreator(styleParameter, SnrVectorOrScalar)
+    SnrVector = getSnrVector(styleParameter, SnrVectorOrScalar)
     return LevelVector, SnrVector
 
-def SnrVectorCreator(styleParameter ,SnrVectorOrScalar):
+def getSnrVector(styleParameter ,SnrVectorOrScalar):
     '''
     This method generates an SNR vector. If a scalar is passed, the vector is generated 
     based on the styleParameter, the scalar serves as the end value. The SNR resolution is 
@@ -470,16 +472,18 @@ def getEfficiency(SnrInDecibel, CodeRateFactor, SnrFactor, MaximumRate):
     '''
     Bler = np.array(getBler(SnrInDecibel, CodeRateFactor, SnrFactor, MaximumRate))
     return [((1.0 - Bler[i]) * MaximumRate[i]) for i in range(len(MaximumRate))]
-
+#Example override some parameter if you like so
 FigOption1           = StyleParameter()
 FigOption1.LineStyle = 'solid'
 FigOption1.CsvSave   = True
 FigOption1.FigSave   = True
-
-PlotBlerforCqiTable2(np.linspace(1,15,15), np.linspace(-10,20,100))
+#Call some methods to create plots for your dedicated NR table 
+PlotBlerforCqiTable2([1, 2 ,10], np.linspace(-10,20,100))
 PlotEfficiencyforCqiTable2(np.linspace(1,15,15), np.linspace(-10,20,100))
-PlotBlerforMcsTable1(np.linspace(0,28,29), np.linspace(-10,20,100))
+
+PlotBlerforMcsTable1([0, 30], np.linspace(-10,20,100))
 PlotEfficiencyforMcsTable1(np.linspace(0,28,29), np.linspace(-10,20,100))
+
 PlotBlerforMcsTable2(np.linspace(0,27,28), np.linspace(-10,20,100))
 PlotEfficiencyforMcsTable2(np.linspace(0,27,28), np.linspace(-10,20,100))
 
