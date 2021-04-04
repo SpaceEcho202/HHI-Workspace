@@ -437,7 +437,7 @@ def LevelVectorCreator(LevelIndex, DedicatedTable):
 
         Is Enum class to verify which table is dedicated e.g NR_Table.CQI_TABLE_2
     '''
-    np.array(LevelIndex) if np.isscalar(LevelIndex) else LevelIndex
+    LevelIndex = np.array(LevelIndex)
     LevelIndexMin,LevelIndexMax = np.min(LevelIndex), np.max(LevelIndex)
     if DedicatedTable is NR_Table.CQI_TABLE_2: LevelIndex = np.array(LevelIndex) - 1 
     return LevelIndex.astype(int), LevelIndexMin, LevelIndexMax
@@ -472,21 +472,20 @@ def getEfficiency(SnrInDecibel, CodeRateFactor, SnrFactor, MaximumRate):
     '''
     Bler = np.array(getBler(SnrInDecibel, CodeRateFactor, SnrFactor, MaximumRate))
     return [((1.0 - Bler[i]) * MaximumRate[i]) for i in range(len(MaximumRate))]
+
+ 
 #Example override some parameter if you like so
 FigOption1           = StyleParameter()
 FigOption1.LineStyle = 'solid'
 FigOption1.CsvSave   = True
 FigOption1.FigSave   = True
-#Call some methods to create plots for your dedicated NR table 
+#Call methods to create plots for your dedicated NR table 
 PlotBlerforCqiTable2([1, 2 ,10], np.linspace(-10,20,100))
 PlotEfficiencyforCqiTable2(np.linspace(1,15,15), np.linspace(-10,20,100))
-
-PlotBlerforMcsTable1([0, 30], np.linspace(-10,20,100))
+PlotBlerforMcsTable1([0, 2 ,15], np.linspace(-10,20,100))
 PlotEfficiencyforMcsTable1(np.linspace(0,28,29), np.linspace(-10,20,100))
-
 PlotBlerforMcsTable2(np.linspace(0,27,28), np.linspace(-10,20,100))
 PlotEfficiencyforMcsTable2(np.linspace(0,27,28), np.linspace(-10,20,100))
-
 
 FigOption2 = StyleParameter()
 FigOption2.Label = ['Test_1', 'Test_2']
